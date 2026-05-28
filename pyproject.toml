@@ -1,0 +1,28 @@
+[project]
+name = "fidsus"
+version = "0.1.0"
+description = "FIDSUS: Federated Intrusion Detection for Securing UAV Swarms"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pandas",
+    "scikit-learn",
+    "scipy",
+    "ujson",
+    "h5py",
+    "seaborn",
+    "matplotlib",
+    "torch==2.0.1",
+    "torchaudio==2.0.2",
+    "torchtext==0.15.2",
+    "torchvision==0.15.2",
+    "calmsize",
+    "memory-profiler",
+    "opacus",
+    "portalocker",
+    "cvxpy",
+]
+
+[[tool.uv.index]]
+name = "pytorch-cu118"
+url = "https://download.pytorch.org/whl/cu118"
