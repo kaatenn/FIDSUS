@@ -1,0 +1,46 @@
+{
+  "defaults": {
+    "ignore": false,
+    "device": "cuda",
+    "device_id": "0",
+    "dataset": "UNSW",
+    "num_clients": 50,
+    "join_ratio": 1.0,
+    "client_activity_rate": 1.0,
+    "M": 5,
+    "num_classes": 10,
+    "model": "1dcnn",
+    "batch_size": 64,
+    "local_learning_rate": 0.01,
+    "server_learning_rate": 0.01,
+    "learning_rate_decay": false,
+    "learning_rate_decay_gamma": 0.1,
+    "global_rounds": 100,
+    "local_epochs": 1,
+    "algorithm": "FIDSUS",
+    "random_join_ratio": false,
+    "prev": 0,
+    "times": 1,
+    "eval_gap": 1,
+    "save_folder_name": "items",
+    "batch_num_per_client": 2,
+    "time_threthold": 10000,
+    "beta": 0.0,
+    "lamda": 0.99,
+    "mu": 0.01,
+    "p_learning_rate": 0.01,
+    "tau": 1.0,
+    "momentum": 0.1,
+    "kl_weight": 0.0,
+    "goal": "test"
+  },
+  "experiments": [
+    {
+      "name": "FIDSUS on UNSW (default)",
+      "algorithm": "FIDSUS",
+      "dataset": "UNSW",
+      "times": 1,
+      "global_rounds": 100
+    }
+  ]
+}

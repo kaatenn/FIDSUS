@@ -88,55 +88,109 @@ generate_unsw(dir_path, num_clients=50, niid=True, balance=False, partition="dir
 cd system
 ```
 
-#### 运行 FIDSUS（默认算法）在 UNSW 数据集上
+#### 运行默认实验（FIDSUS on UNSW）
 
 ```bash
-python main.py -data UNSW -algo FIDSUS
+python main.py
 ```
 
-#### 运行 FedAvg 基线在 NSL-KDD 上
+这会自动读取 `experiments/default.json` 并运行其中定义的所有实验。
+
+#### 运行指定的配置文件
 
 ```bash
-python main.py -data NSLKDD -algo FedAvg
+python main.py --config experiments/algorithm_comparison.json
 ```
 
-#### 指定客户端数和全局轮次
+简写形式：
 
 ```bash
-python main.py -data UNSW -algo FIDSUS -nc 50 -gr 100 -lbs 64
+python main.py -c experiments/full_sweep.json
 ```
 
-### 3.2 完整命令行参数
+### 3.2 JSON 配置文件格式
 
-| 参数 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| `-data` | str | `UNSW` | 数据集选择: `UNSW`, `NSLKDD`, `mnist`, `FashionMNIST` |
-| `-algo` | str | `FIDSUS` | 算法选择（见 §3.3） |
-| `-go` | str | `test` | 实验标识（用于结果文件命名） |
-| `-dev` | str | `cuda` | 设备: `cuda` / `cpu` |
-| `-did` | str | `0` | CUDA 设备 ID |
-| `-nc` | int | `50` | 客户端总数 |
-| `-jr` | float | `1.0` | 每轮参与客户端比例 |
-| `-gr` | int | `100` | 全局通信轮次 |
-| `-ls` | int | `1` | 本地训练轮次（epoch） |
-| `-lbs` | int | `64` | 本地 batch size |
-| `-lr` | float | `0.01` | 本地学习率 |
-| `-slr` | float | `0.01` | Server 端学习率（FedGH / FIDSUS 用） |
-| `-nb` | int | `10` | 类别数 |
-| `-m` | str | `1dcnn` | 模型架构 |
-| `-t` | int | `1` | 重复运行次数 |
-| `-eg` | int | `1` | 评估间隔（每 N 轮评估一次） |
-| `-M` | int | `5` | FIDSUS: 每个客户端收到的相似模型数 |
-| `-mu` | float | `0.01` | FedProx / FIDSUS 近端项系数 |
-| `-lam` | float | `0.99` | FedProto / GPFL 正则化系数 |
-| `-tau` | float | `1.0` | MOON 温度系数 |
-| `-klw` | float | `0.0` | FedAvgDBE KL 权重 |
-| `-car` | float | `1.0` | 客户端活跃率（模拟掉线） |
-| `-ld` | bool | `False` | 是否启用学习率衰减 |
-| `-ldg` | float | `0.1` | 学习率衰减 gamma |
-| `-tth` | float | `10000` | 慢客户端超时阈值（秒） |
+配置文件由两部分组成：`defaults`（共享默认值）和 `experiments`（实验列表）。
 
-### 3.3 可选算法
+```json
+{
+  "defaults": {
+    "ignore": false,
+    "device": "cuda",
+    "device_id": "0",
+    "dataset": "UNSW",
+    "num_clients": 50,
+    "join_ratio": 1.0,
+    "global_rounds": 100,
+    "local_epochs": 1,
+    "batch_size": 64,
+    "local_learning_rate": 0.01,
+    ...
+  },
+  "experiments": [
+    {
+      "name": "FIDSUS on UNSW",
+      "algorithm": "FIDSUS",
+      "dataset": "UNSW",
+      "times": 3
+    },
+    {
+      "name": "FedAvg baseline",
+      "algorithm": "FedAvg",
+      "dataset": "NSLKDD",
+      "num_classes": 5,
+      "ignore": true
+    }
+  ]
+}
+```
+
+**规则：**
+- `defaults` 中的值应用于所有实验，单个实验可通过覆盖字段来定制
+- `experiments` 数组中的每个对象代表一次实验
+- `name` 字段可选，省略时自动生成 `{algorithm}_{dataset}_{goal}`
+- `ignore` 设为 `true` 可临时跳过某个实验（无需删除配置）
+- 合并方式为浅合并：`{...defaults, ...experiment}`
+
+### 3.3 完整参数列表
+
+| JSON 键 | 类型 | 默认值 | 说明 |
+|---------|------|--------|------|
+| `ignore` | bool | `false` | 是否跳过此实验 |
+| `algorithm` | str | `"FIDSUS"` | 算法选择（见 §3.4） |
+| `dataset` | str | `"UNSW"` | 数据集：`UNSW`, `NSLKDD`, `mnist`, `FashionMNIST` |
+| `goal` | str | `"test"` | 实验标识（用于结果文件命名） |
+| `device` | str | `"cuda"` | 设备：`cuda` / `cpu` |
+| `device_id` | str | `"0"` | CUDA 设备 ID |
+| `num_clients` | int | `50` | 客户端总数 |
+| `join_ratio` | float | `1.0` | 每轮参与客户端比例 |
+| `global_rounds` | int | `100` | 全局通信轮次 |
+| `local_epochs` | int | `1` | 本地训练轮次（epoch） |
+| `batch_size` | int | `64` | 本地 batch size |
+| `local_learning_rate` | float | `0.01` | 本地学习率 |
+| `server_learning_rate` | float | `0.01` | Server 端学习率（FedGH / FIDSUS 用） |
+| `num_classes` | int | `10` | 类别数 |
+| `model` | str | `"1dcnn"` | 模型架构 |
+| `times` | int | `1` | 重复运行次数 |
+| `eval_gap` | int | `1` | 评估间隔（每 N 轮评估一次） |
+| `M` | int | `5` | FIDSUS：每个客户端收到的相似模型数 |
+| `mu` | float | `0.01` | FedProx / FIDSUS 近端项系数 |
+| `lamda` | float | `0.99` | FedProto / GPFL 正则化系数 |
+| `tau` | float | `1.0` | MOON 温度系数 |
+| `kl_weight` | float | `0.0` | FedAvgDBE KL 权重 |
+| `client_activity_rate` | float | `1.0` | 客户端活跃率（模拟掉线） |
+| `learning_rate_decay` | bool | `false` | 是否启用学习率衰减 |
+| `learning_rate_decay_gamma` | float | `0.1` | 学习率衰减 gamma |
+| `time_threthold` | float | `10000` | 慢客户端超时阈值（秒） |
+| `batch_num_per_client` | int | `2` | 每客户端批次数 |
+| `random_join_ratio` | bool | `false` | 随机参与比例 |
+| `prev` | int | `0` | 续跑起始索引 |
+| `save_folder_name` | str | `"items"` | 模型保存目录 |
+| `beta` | float | `0.0` | 额外参数 |
+| `p_learning_rate` | float | `0.01` | 个性化学习率 |
+| `momentum` | float | `0.1` | 动量系数 |
+
+### 3.4 可选算法
 
 | 算法参数值 | 论文中角色 |
 |-----------|-----------|
@@ -149,39 +203,61 @@ python main.py -data UNSW -algo FIDSUS -nc 50 -gr 100 -lbs 64
 | `GPFL` | 对比：通用/个性化条件变换 |
 | `FedAvgDBE` | 对比：分布偏差消除 |
 
-### 3.4 批量实验示例
+### 3.5 批量实验
 
-创建批量脚本 `run_experiments.sh`：
+在 JSON 配置文件的 `experiments` 数组中定义多个实验即可，一次运行顺序执行：
 
-```bash
-#!/bin/bash
-cd system
-
-algos=("FedAvg" "FedProx" "FedProto" "MOON" "FedGH" "GPFL" "FedAvgDBE" "FIDSUS")
-datasets=("UNSW" "NSLKDD")
-
-for algo in "${algos[@]}"; do
-    for ds in "${datasets[@]}"; do
-        echo "=== Running $algo on $ds ==="
-        python main.py -algo "$algo" -data "$ds" -nc 50 -gr 100 -t 3 -go "full_comparison"
-    done
-done
+```json
+{
+  "experiments": [
+    {"algorithm": "FedAvg",  "dataset": "UNSW",   "times": 3},
+    {"algorithm": "FedProx", "dataset": "UNSW",   "times": 3},
+    {"algorithm": "FIDSUS",  "dataset": "UNSW",   "times": 3},
+    {"algorithm": "FedAvg",  "dataset": "NSLKDD", "num_classes": 5, "times": 3},
+    {"algorithm": "FIDSUS",  "dataset": "NSLKDD", "num_classes": 5, "times": 3}
+  ]
+}
 ```
 
-### 3.5 复现论文主要实验
+**预置配置文件：**
+
+| 文件 | 说明 |
+|------|------|
+| `experiments/default.json` | 单次默认实验（FIDSUS on UNSW） |
+| `experiments/algorithm_comparison.json` | 8 算法 × 2 数据集（UNSW + NSLKDD），各 3 次 |
+| `experiments/full_sweep.json` | 全覆盖：4 数据集 × 8 算法 + mu/M/jr 参数扫描，MNIST/FashionMNIST 默认跳过 |
+
+### 3.6 跳过实验
+
+将实验中 `ignore` 设为 `true` 即可临时禁用，无需删除配置行：
+
+```json
+{
+  "experiments": [
+    {"name": "keep this",    "algorithm": "FedAvg", "dataset": "UNSW"},
+    {"name": "skip this",    "algorithm": "FedAvg", "dataset": "NSLKDD", "ignore": true}
+  ]
+}
+```
+
+运行时输出 `[SKIPPED]` 标记。
+
+### 3.7 复现论文主要实验
 
 ```bash
 cd system
 
-# FIDSUS 在 UNSW-NB15 上（50 客户端，100 轮）
-python main.py -algo FIDSUS -data UNSW -nc 50 -gr 100 -t 3 -go "reproduce"
+# FIDSUS 在 UNSW-NB15 上（50 客户端，100 轮，3 次重复）
+python main.py -c experiments/default.json
 
-# FedAvg 基线对比
-python main.py -algo FedAvg -data UNSW -nc 50 -gr 100 -t 3 -go "reproduce"
+# 全算法对比（UNSW + NSLKDD）
+python main.py -c experiments/algorithm_comparison.json
 
-# FIDSUS 在 NSL-KDD 上
-python main.py -algo FIDSUS -data NSLKDD -nc 50 -nb 5 -gr 100 -t 3 -go "reproduce"
+# 全覆盖实验（含参数扫描，图像数据集默认跳过）
+python main.py -c experiments/full_sweep.json
 ```
+
+如需只运行特定数据集，编辑配置文件将其他实验的 `ignore` 设为 `true`，或创建自定义配置文件。
 
 ## 4. 结果解读
 
@@ -244,7 +320,8 @@ print(f"Best accuracy: {test_acc.max():.4f} at round {test_acc.argmax()}")
 
 1. **创建 Client**：在 `system/flcore/clients/` 下新建 `clientXXX.py`，继承 `Client`
 2. **创建 Server**：在 `system/flcore/servers/` 下新建 `serverXXX.py`，继承 `Server`
-3. **注册算法**：在 `system/main.py` 中添加 `elif args.algorithm == "XXX":` 分支
+3. **注册算法**：在 `system/main.py` 的算法选择分支中添加 `elif args.algorithm == "XXX":` 分支
+4. **更新配置**：在 JSON 配置文件的实验中添加新算法名即可使用
 
 ### 5.2 添加新模型
 
@@ -259,13 +336,25 @@ print(f"Best accuracy: {test_acc.max():.4f} at round {test_acc.argmax()}")
 ## 6. 常见问题
 
 ### Q: `cuda is not available` 怎么办？
-A: 程序会自动回退到 CPU。也可以显式指定: `-dev cpu`
+A: 程序会自动回退到 CPU。也可以在 JSON 配置中显式指定：`"device": "cpu"`
 
 ### Q: 数据集已存在，如何强制重新生成？
 A: 删除对应数据集的 `config.json` 后再运行 generate 脚本，或删除整个 `train/` 和 `test/` 目录。
 
 ### Q: 如何修改客户端数量？
-A: 修改 generate 脚本中的 `num_clients` 并重新生成数据，运行实验时用 `-nc` 指定相同数量。
+A: 修改 generate 脚本中的 `num_clients` 并重新生成数据，在 JSON 配置中用 `"num_clients"` 指定相同数量。
 
 ### Q: torch 版本必须用 2.0.1 吗？
 A: 这是论文原始环境版本。如需升级，编辑 `pyproject.toml` 中的 torch 相关版本号，注意同步更新 `torchaudio`/`torchvision`/`torchtext` 的兼容版本，然后执行 `uv lock --upgrade-package torch`。
+
+### Q: 如何跳过某个实验而不删除配置？
+A: 将该实验的 `"ignore"` 设为 `true`，运行时自动跳过并显示 `[SKIPPED]` 标记。
+
+### Q: 如何创建新的实验配置？
+A: 复制 `experiments/` 目录下的任一 `.json` 文件作为模板，修改 `experiments` 数组即可。然后用 `python main.py -c experiments/your_config.json` 运行。
+
+### Q: 多实验配置中某个实验失败了怎么办？
+A: 程序不会因单个实验失败而中断——后续实验会继续运行。检查失败实验的报错信息，修正配置后可将 `"prev"` 设为已完成次数来续跑。
+
+### Q: 配置文件路径相对于哪里？
+A: 相对于 `system/` 目录（即 `main.py` 所在目录）。建议将配置文件放在 `system/experiments/` 下。
