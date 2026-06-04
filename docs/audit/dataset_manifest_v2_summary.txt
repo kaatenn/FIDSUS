@@ -1,0 +1,94 @@
+UAV-NIDD DATASET MANIFEST SUMMARY
+========================================
+Total files: 126
+
+Read format counts
+------------------
+zeek_tsv: 70
+csv_comma: 48
+csv_tab: 6
+excel: 2
+
+Scenario counts
+---------------
+gcs_case_3: 75
+uav_case_1: 25
+access_point_case_2: 19
+summary_or_labeled_files: 4
+unknown: 3
+
+File role counts
+----------------
+raw_packet_csv: 45
+zeek_conn_log: 37
+zeek_log: 35
+labeled_summary: 3
+unknown: 3
+flow_feature_csv: 2
+physical_feature: 1
+
+Normalized attack counts
+------------------------
+Normal: 56
+DoS: 10
+DDoS: 8
+MITM: 8
+Fake Landing: 7
+unknown: 7
+Brute Force: 6
+De-authentication: 6
+Reconnaissance: 6
+Scanning: 6
+Replay: 3
+Evil Twin: 1
+GPS Jamming: 1
+GPS Spoofing and Jamming: 1
+
+Schema hash counts
+------------------
+9bcefe42: 39
+8e57066f: 35
+f523e925: 35
+648f09cf: 3
+0cfae96d: 2
+129eadcc: 2
+4215e014: 2
+31e1613e: 1
+349098e4: 1
+377746df: 1
+3eb2f876: 1
+554bf21f: 1
+9b8039c6: 1
+ad71185a: 1
+dcc0956e: 1
+
+Column count = 1 files
+----------------------
+- UAV Traffic Flowmeter/UAV Traffic Flowmeter/UAV Flowmeter.log
+- UAV Traffic Flowmeter/UAV Traffic Flowmeter/scripts/Load.log
+- UAV Traffic Flowmeter/UAV Traffic Flowmeter/scripts/UAV Flowmeter.log
+
+Column names containing tab
+---------------------------
+(none)
+
+Read failures
+-------------
+(none)
+
+Suspected labeled summary files
+-------------------------------
+- UAV-NDD CSV/Access Point Case2 Label.xlsx
+- UAV-NDD CSV/GSC Case3 Label .csv
+- UAV-NDD CSV/UAV-Case1-Label.csv
+
+Files needing manual confirmation
+---------------------------------
+- UAV Traffic Flowmeter/UAV Traffic Flowmeter/UAV Flowmeter.log
+- UAV Traffic Flowmeter/UAV Traffic Flowmeter/scripts/Load.log
+- UAV Traffic Flowmeter/UAV Traffic Flowmeter/scripts/UAV Flowmeter.log
+- UAV-NDD CSV/Access Point Case2 Label.xlsx
+- UAV-NDD CSV/GSC Case3 Label .csv
+- UAV-NDD CSV/Physical Feature.csv
+- UAV-NDD CSV/UAV-Case1-Label.csv
+
