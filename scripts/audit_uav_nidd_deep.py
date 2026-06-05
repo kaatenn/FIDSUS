@@ -203,20 +203,26 @@ def get_numeric_cols(df, non_feature_set):
 
 
 def compute_stats(df, numeric_cols):
-    """Compute count, mean, std for numeric columns. Uses float32."""
+    """Compute count, mean, std, min, max for numeric columns. Uses float32."""
     if len(df) == 0:
         return {"count": 0, "mean": pd.Series(dtype="float64"),
-                "std": pd.Series(dtype="float64")}
+                "std": pd.Series(dtype="float64"),
+                "min": pd.Series(dtype="float64"),
+                "max": pd.Series(dtype="float64")}
     sub = df[numeric_cols].fillna(0)
     # Convert to float32 for memory, then compute
     sub_arr = sub.values.astype("float32")
     count = len(sub_arr)
     mean_vals = np.mean(sub_arr, axis=0)
     std_vals = np.std(sub_arr, axis=0, ddof=0)
+    min_vals = np.min(sub_arr, axis=0)
+    max_vals = np.max(sub_arr, axis=0)
     return {
         "count": count,
         "mean": pd.Series(mean_vals, index=numeric_cols),
         "std": pd.Series(std_vals, index=numeric_cols),
+        "min": pd.Series(min_vals, index=numeric_cols),
+        "max": pd.Series(max_vals, index=numeric_cols),
     }
 
 
@@ -234,15 +240,39 @@ def load_csv_chunked(path, fmt, numeric_cols_hint=None):
 
 
 def normalized_deviation(attack_mean, baseline_mean,
-                          attack_std, baseline_std):
-    """Cohen's-d-like normalized deviation from baseline.
+                          attack_std, baseline_std,
+                          baseline_min, baseline_max):
+    """Normalize features to [0,1] using baseline range, then compute Cohen's d.
 
-    d = |mean_a - mean_b| / pooled_std
-    pooled_std = sqrt((s1^2 + s2^2) / 2)
+    Each feature is min-max normalized using the Normal baseline's observed
+    range, making all features dimensionless and directly comparable regardless
+    of original unit (bytes, packet counts, flags, time intervals). Cohen's d
+    is then computed on the normalized means and standard deviations.
+
+    For features with zero range in the baseline (constant values), the
+    normalized values are set to 0, yielding d = 0 (no discriminative power).
     """
-    pooled_var = (attack_std ** 2 + baseline_std ** 2) / 2
+    baseline_range = baseline_max - baseline_min
+    # Use inf for zero-range features so division yields 0 after cleanup
+    safe_range = np.where(baseline_range > 1e-12, baseline_range, np.inf)
+
+    # Normalize means to [0,1]
+    attack_norm = (attack_mean - baseline_min) / safe_range
+    baseline_norm = (baseline_mean - baseline_min) / safe_range
+    # Normalize stds to [0,1] (property of linear transformation)
+    attack_std_norm = attack_std / safe_range
+    baseline_std_norm = baseline_std / safe_range
+
+    # Clean up zero-range features
+    attack_norm = attack_norm.fillna(0).replace([np.inf, -np.inf], 0)
+    baseline_norm = baseline_norm.fillna(0).replace([np.inf, -np.inf], 0)
+    attack_std_norm = attack_std_norm.fillna(0).replace([np.inf, -np.inf], 0)
+    baseline_std_norm = baseline_std_norm.fillna(0).replace([np.inf, -np.inf], 0)
+
+    # Cohen's d on normalized values
+    pooled_var = (attack_std_norm ** 2 + baseline_std_norm ** 2) / 2
     pooled_std = np.sqrt(np.maximum(pooled_var, 1e-12))
-    d = np.abs(attack_mean - baseline_mean) / pooled_std
+    d = np.abs(attack_norm - baseline_norm) / pooled_std
     return d.fillna(0).replace([np.inf, -np.inf], 0)
 
 
@@ -311,10 +341,16 @@ def discover_files():
             if output1.exists():
                 mapping["GCS"][attack_label].append(output1)
         else:
-            # Use the "attack" labeled CSV (flowmeter) if present
+            # Use the "attack" labeled CSV (flowmeter) if present,
+            # otherwise fall back to broad patterns (De-authentication, etc.)
             attack_csvs = sorted(attack_dir.glob("*[Aa]ttack*.csv"))
             if attack_csvs:
                 mapping["GCS"][attack_label].extend(attack_csvs)
+            elif dir_name == "De-authentication":
+                # De-authentication.csv (no "attack" in filename)
+                deauth_csv = attack_dir / "De-authentication.csv"
+                if deauth_csv.exists():
+                    mapping["GCS"][attack_label].append(deauth_csv)
 
     # ── UAV ──
     uav_attack_dirs = {
@@ -380,7 +416,8 @@ def load_all_stats(file_mapping):
         for attack, csv_paths in sorted(mapping.items()):
             if not csv_paths:
                 target[attack] = {"count": 0, "mean": pd.Series(),
-                                   "std": pd.Series(), "numeric_cols": [],
+                                   "std": pd.Series(), "min": pd.Series(),
+                                   "max": pd.Series(), "numeric_cols": [],
                                    "fmt": "no_csv"}
                 continue
 
@@ -397,7 +434,8 @@ def load_all_stats(file_mapping):
 
             if not all_dfs:
                 target[attack] = {"count": 0, "mean": pd.Series(),
-                                   "std": pd.Series(), "numeric_cols": [],
+                                   "std": pd.Series(), "min": pd.Series(),
+                                   "max": pd.Series(), "numeric_cols": [],
                                    "fmt": "empty"}
                 continue
 
@@ -567,10 +605,11 @@ def main():
         sepline(f, "3. CROSS-VIEW: SAME ATTACK – GCS vs UAV IMPACT COMPARISON")
         f.write("Method: For each attack present on BOTH sides, compute "
                 "per-feature normalized\n")
-        f.write("deviation from Normal/Benign (Cohen's d against baseline). "
-                "Report Top-10\n")
-        f.write("most-deviated features per side to show HOW each platform "
-                "experiences the attack.\n\n")
+        f.write("deviation from Normal/Benign (range-normalized: "
+                "|attack_mean - normal_mean| / normal_range).\n")
+        f.write("Each feature is normalized by its own baseline range, making ")
+        f.write("all features comparable\non the same [0,1] scale regardless "
+                "of unit (bytes, counts, flags, time).\n")
 
         common_attacks = sorted(
             set(gcs_attacks) & set(uav_attacks) - {"Normal", "Replay"}
@@ -603,6 +642,7 @@ def main():
                 gcs_dev = normalized_deviation(
                     gcs_att["mean"][gcs_nc], gcs_normal["mean"][gcs_nc],
                     gcs_att["std"][gcs_nc], gcs_normal["std"][gcs_nc],
+                    gcs_normal["min"][gcs_nc], gcs_normal["max"][gcs_nc],
                 )
                 gcs_top = top_k(gcs_dev, 10)
                 f.write(f"  GCS (flow-level, {len(gcs_nc)} features) — "
@@ -624,6 +664,7 @@ def main():
                 uav_dev = normalized_deviation(
                     uav_att["mean"][uav_nc], uav_normal["mean"][uav_nc],
                     uav_att["std"][uav_nc], uav_normal["std"][uav_nc],
+                    uav_normal["min"][uav_nc], uav_normal["max"][uav_nc],
                 )
                 uav_top = top_k(uav_dev, 10)
                 f.write(f"  UAV (packet-level, {len(uav_nc)} features) — "
@@ -671,6 +712,7 @@ def main():
                     dev = normalized_deviation(
                         att_s["mean"][nc], normal["mean"][nc],
                         att_s["std"][nc], normal["std"][nc],
+                        normal["min"][nc], normal["max"][nc],
                     )
                     top = top_k(dev, 10)
                     f.write(f"  GCS only — Top-10 most-deviated features "
@@ -688,6 +730,7 @@ def main():
                     dev = normalized_deviation(
                         att_s["mean"][nc], normal["mean"][nc],
                         att_s["std"][nc], normal["std"][nc],
+                        normal["min"][nc], normal["max"][nc],
                     )
                     top = top_k(dev, 10)
                     f.write(f"  UAV only — Top-10 most-deviated features "
@@ -746,6 +789,8 @@ def main():
                 )
             normal_mean = normal["mean"][ref_cols].fillna(0)
             normal_std = normal["std"][ref_cols].fillna(0)
+            normal_min = normal["min"][ref_cols].fillna(0)
+            normal_max = normal["max"][ref_cols].fillna(0)
 
             # Deviation matrix: attack × feature
             dev_records = {}
@@ -756,6 +801,7 @@ def main():
                 att_std = att_s["std"].reindex(ref_cols).fillna(0)
                 dev = normalized_deviation(
                     att_mean, normal_mean, att_std, normal_std,
+                    normal_min, normal_max,
                 )
                 dev_records[att] = dev
 
@@ -830,9 +876,10 @@ Q2 (Feature counts): How many numeric features are available per attack?
      86–116 packet-level features. They are disjoint spaces.
 
 Q3 (Cross-view — same attack, GCS vs UAV impact):
-   → Section 3. For each attack, Cohen's d quantifies how far each feature
-     deviates from its Normal baseline. A larger mean |d| means the platform
-     was more severely affected. Comparing GCS mean|d| vs UAV mean|d| for the
+   → Section 3. For each attack, range-normalized deviation quantifies how
+     far each feature deviates from its Normal baseline, as a fraction of the
+     feature's own observed range. A larger mean |d| means the platform was
+     more severely affected. Comparing GCS mean|d| vs UAV mean|d| for the
      same attack reveals which side is more impacted.
 
 Q4 (Within-view — different attacks, same platform):

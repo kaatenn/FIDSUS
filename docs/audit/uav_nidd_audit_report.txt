@@ -42,8 +42,7 @@ GCS file inventory:
   Replay                : 2 file(s)
     - conn.csv (0.0 MB)
     - replay-01.cap_exported.csv (0.7 MB)
-  Scanning              : 2 file(s)
-    - conn.csv (5.8 MB)
+  Scanning              : 1 file(s)
     - output1.csv (17.1 MB)
 
 UAV file inventory:
@@ -59,8 +58,7 @@ UAV file inventory:
     - 0flood66s.csv (94.0 MB)
     - 0flood6s.csv (445.0 MB)
     - 0floods.csv (323.4 MB)
-  Fake Landing          : 2 file(s)
-    - FakeLanding.csv (9.3 MB)
+  Fake Landing          : 1 file(s)
     - FakeLanding.csv (9.3 MB)
   GPS Jamming           : 1 file(s)
     - GPS Jammong UAV.csv (647.6 MB)
@@ -91,25 +89,26 @@ DDoS                      1,585,741    3,171,810    4,757,551
 De-authentication             1,656       40,583       42,239
 DoS                       3,395,955    1,214,433    4,610,388
 Evil Twin                        71          N/A           71
-Fake Landing                    298       48,100       48,398
+Fake Landing                    298       24,050       24,348
 GPS Jamming                     N/A       41,600       41,600
 MITM                          1,656      151,586      153,242
 Normal                          109       11,733       11,842
 Reconnaissance               51,145            6       51,151
 Replay                        8,826            -        8,826
-Scanning                    102,290        9,030      111,320
+Scanning                     51,145        9,030       60,175
 ------------------------------------------------------------
-TOTAL                     5,157,908    4,864,806   10,022,714
+TOTAL                     5,106,763    4,840,756    9,947,519
 
 Attacks present ONLY in GCS: ['Evil Twin']
 Attacks present ONLY in UAV: ['GPS Jamming']
 Attacks present in BOTH:    ['Brute Force', 'DDoS', 'De-authentication', 'DoS', 'Fake Landing', 'MITM', 'Normal', 'Reconnaissance', 'Replay', 'Scanning']
 
 Data availability notes:
-  - GCS Replay: limited to tshark export (7 columns), not flowmeter level
+  - GCS Replay: conn.csv (Zeek conn) + tshark export; not flowmeter level
   - UAV Replay: NO CSV available (only .pcap), excluded from UAV stats
-  - UAV De-authentication folder contained FakeLanding.csv (reassigned to Fake Landing)
+  - UAV De-authentication folder contained an identical copy of FakeLanding.csv (skipped, not double-counted)
   - GCS MITM folder contains Evil Twin.csv as a sub-type (treated separately)
+  - GCS Scanning: output1.csv (flowmeter) used; conn.csv (Zeek conn, different schema) excluded
 
 ======================================================================
 2. FEATURE COUNTS PER ATTACK (GCS vs UAV)
@@ -128,10 +127,10 @@ MITM                               80            102                 zeek       
 Normal                             80             98                 zeek               tshark
 Reconnaissance                     80            114                 zeek               tshark
 Replay                             10              0         tshark, zeek               no_csv
-Scanning                           88            111                 zeek               tshark
+Scanning                           80            111                 zeek               tshark
 
 Summary:
-  GCS: 10–88 numeric features per attack (uniform schema per side)
+  GCS: 10–80 numeric features per attack (uniform schema per side)
   UAV: 86–116 numeric features per attack (uniform schema per side)
 
   GCS feature space: flow-level (Zeek conn + flowmeter):
@@ -145,39 +144,39 @@ Summary:
 ======================================================================
 
 Method: For each attack present on BOTH sides, compute per-feature normalized
-deviation from Normal/Benign (Cohen's d against baseline). Report Top-10
-most-deviated features per side to show HOW each platform experiences the attack.
-
+deviation from Normal/Benign (range-normalized: |attack_mean - normal_mean| / normal_range).
+Each feature is normalized by its own baseline range, making all features comparable
+on the same [0,1] scale regardless of unit (bytes, counts, flags, time).
 ── Attack: Brute Force ──
 
   GCS (flow-level, 80 features) — Top-10 most-deviated features vs Normal:
     fwd_header_size_min                                d=9.578
     bwd_iat.avg                                        d=8.683
     bwd_iat.max                                        d=8.223
-    flow_ACK_flag_count                                d=8.040
     bwd_header_size_max                                d=8.017
     bwd_iat.std                                        d=7.945
-    bwd_PSH_flag_count                                 d=7.476
-    fwd_PSH_flag_count                                 d=7.457
     fwd_header_size_max                                d=7.134
-    bwd_pkts_payload.std                               d=6.844
-  GCS mean |d| across all features: 1.4554
+    bwd_header_size_min                                d=5.017
+    bwd_iat.tot                                        d=1.579
+    fwd_pkts_payload.avg                               d=1.086
+    fwd_pkts_payload.max                               d=1.030
+  GCS mean |d| across all features: 0.9913
 
   UAV (packet-level, 84 features) — Top-10 most-deviated features vs Normal:
-    tcp.payload                                        d=4.723
     radiotap.channel.flags.cck                         d=2.431
     udp.length                                         d=1.874
-    tcp.srcport                                        d=1.701
     tcp.analysis                                       d=1.645
-    tcp.time_delta                                     d=1.331
     udp.srcport                                        d=1.158
     nbns                                               d=0.980
     frame.len                                          d=0.719
-    tcp.dstport                                        d=0.348
-  UAV mean |d| across all features: 0.2159
+    udp.dstport                                        d=0.277
+    http.request.full_uri                              d=0.089
+    tcp.ack                                            d=0.086
+    nbss.length                                        d=0.086
+  UAV mean |d| across all features: 0.1133
 
   Interpretation:
-    GCS mean |d| = 1.4554  |  UAV mean |d| = 0.2159
+    GCS mean |d| = 0.9913  |  UAV mean |d| = 0.1133
     → GCS shows LARGER overall deviation under Brute Force than UAV.
     GCS sees flow-metric shifts (packet rates, header sizes, IAT);
     UAV sees packet/radio-level shifts (frame length, port usage, signal).
@@ -185,33 +184,33 @@ most-deviated features per side to show HOW each platform experiences the attack
 ── Attack: DDoS ──
 
   GCS (flow-level, 80 features) — Top-10 most-deviated features vs Normal:
-    flow_SYN_flag_count                                d=281.576
-    fwd_init_window_size                               d=271.872
-    fwd_last_window_size                               d=271.871
-    flow_RST_flag_count                                d=254.405
-    flow_ACK_flag_count                                d=96.723
     fwd_header_size_max                                d=15.127
     fwd_header_size_min                                d=15.127
     bwd_header_size_min                                d=11.252
     bwd_header_size_max                                d=11.251
     bwd_pkts_per_sec                                   d=2.622
-  GCS mean |d| across all features: 15.8551
+    flow_pkts_per_sec                                  d=2.592
+    fwd_pkts_per_sec                                   d=2.539
+    fwd_pkts_payload.max                               d=1.321
+    fwd_pkts_payload.avg                               d=1.234
+    flow_pkts_payload.max                              d=1.194
+  GCS mean |d| across all features: 1.1493
 
   UAV (packet-level, 89 features) — Top-10 most-deviated features vs Normal:
     tcp.analysis                                       d=5.494
     radiotap.channel.flags.cck                         d=1.913
     udp.length                                         d=1.888
-    tcp.time_relative                                  d=1.873
-    tcp.srcport                                        d=1.408
-    tcp.dstport                                        d=1.408
     udp.srcport                                        d=1.331
-    tcp.time_delta                                     d=0.996
-    tcp.analysis.rto_frame                             d=0.923
     frame.len                                          d=0.833
-  UAV mean |d| across all features: 0.2137
+    udp.dstport                                        d=0.277
+    dns.count.auth_rr                                  d=0.132
+    dns.count.queries                                  d=0.121
+    http.next_response_in                              d=0.101
+    nbss.length                                        d=0.086
+  UAV mean |d| across all features: 0.1394
 
   Interpretation:
-    GCS mean |d| = 15.8551  |  UAV mean |d| = 0.2137
+    GCS mean |d| = 1.1493  |  UAV mean |d| = 0.1394
     → GCS shows LARGER overall deviation under DDoS than UAV.
     GCS sees flow-metric shifts (packet rates, header sizes, IAT);
     UAV sees packet/radio-level shifts (frame length, port usage, signal).
@@ -221,31 +220,31 @@ most-deviated features per side to show HOW each platform experiences the attack
   GCS (flow-level, 80 features) — Top-10 most-deviated features vs Normal:
     fwd_header_size_max                                d=1.086
     fwd_header_size_min                                d=1.086
-    flow_SYN_flag_count                                d=1.033
-    fwd_init_window_size                               d=1.033
-    fwd_last_window_size                               d=1.033
     flow_pkts_payload.std                              d=0.948
     fwd_pkts_payload.std                               d=0.947
     active.avg                                         d=0.869
     active.min                                         d=0.869
     flow_pkts_payload.max                              d=0.861
-  GCS mean |d| across all features: 0.3632
+    flow_pkts_payload.avg                              d=0.789
+    active.max                                         d=0.756
+    fwd_pkts_payload.max                               d=0.709
+  GCS mean |d| across all features: 0.3244
 
   UAV (packet-level, 91 features) — Top-10 most-deviated features vs Normal:
     radiotap.channel.flags.cck                         d=2.406
     udp.length                                         d=1.888
-    radiotap.datarate                                  d=1.639
     udp.srcport                                        d=1.331
-    radiotap.rxflags                                   d=1.241
-    radiotap.length                                    d=1.189
-    wlan_radio.start_tsf                               d=1.131
     nbns                                               d=0.986
-    radiotap.dbm_antsignal                             d=0.969
-    radiotap.channel.freq                              d=0.910
-  UAV mean |d| across all features: 0.2314
+    frame.len                                          d=0.373
+    tcp.ack                                            d=0.279
+    udp.dstport                                        d=0.277
+    tcp.analysis                                       d=0.240
+    dns.count.auth_rr                                  d=0.132
+    dns.count.queries                                  d=0.121
+  UAV mean |d| across all features: 0.0950
 
   Interpretation:
-    GCS mean |d| = 0.3632  |  UAV mean |d| = 0.2314
+    GCS mean |d| = 0.3244  |  UAV mean |d| = 0.0950
     → GCS shows LARGER overall deviation under De-authentication than UAV.
     GCS sees flow-metric shifts (packet rates, header sizes, IAT);
     UAV sees packet/radio-level shifts (frame length, port usage, signal).
@@ -253,33 +252,33 @@ most-deviated features per side to show HOW each platform experiences the attack
 ── Attack: DoS ──
 
   GCS (flow-level, 80 features) — Top-10 most-deviated features vs Normal:
-    flow_SYN_flag_count                                d=135.296
-    fwd_init_window_size                               d=135.296
-    fwd_last_window_size                               d=135.296
-    flow_RST_flag_count                                d=86.381
-    flow_ACK_flag_count                                d=86.381
     fwd_header_size_max                                d=19.836
     fwd_header_size_min                                d=19.836
-    bwd_header_size_max                                d=11.159
     bwd_header_size_min                                d=11.159
+    bwd_header_size_max                                d=11.159
     bwd_pkts_per_sec                                   d=2.485
-  GCS mean |d| across all features: 8.4474
+    flow_pkts_per_sec                                  d=2.064
+    fwd_pkts_per_sec                                   d=1.493
+    fwd_pkts_payload.max                               d=1.321
+    fwd_pkts_payload.avg                               d=1.234
+    flow_pkts_payload.max                              d=1.194
+  GCS mean |d| across all features: 1.2143
 
   UAV (packet-level, 90 features) — Top-10 most-deviated features vs Normal:
-    radiotap.channel.freq                              d=26.944
-    radiotap.length                                    d=8.787
-    wlan_radio.timestamp                               d=4.565
-    radiotap.mactime                                   d=4.565
-    wlan_radio.end_tsf                                 d=4.565
-    wlan_radio.start_tsf                               d=2.957
-    wlan_radio.signal_dbm                              d=2.681
-    radiotap.channel.flags.ofdm                        d=1.921
     udp.length                                         d=1.888
     radiotap.channel.flags.cck                         d=1.875
-  UAV mean |d| across all features: 0.7420
+    udp.srcport                                        d=1.320
+    nbns                                               d=0.985
+    udp.dstport                                        d=0.273
+    frame.len                                          d=0.146
+    dns.count.auth_rr                                  d=0.132
+    dns.count.queries                                  d=0.121
+    http.request.line                                  d=0.105
+    http.next_response_in                              d=0.101
+  UAV mean |d| across all features: 0.0828
 
   Interpretation:
-    GCS mean |d| = 8.4474  |  UAV mean |d| = 0.7420
+    GCS mean |d| = 1.2143  |  UAV mean |d| = 0.0828
     → GCS shows LARGER overall deviation under DoS than UAV.
     GCS sees flow-metric shifts (packet rates, header sizes, IAT);
     UAV sees packet/radio-level shifts (frame length, port usage, signal).
@@ -289,15 +288,15 @@ most-deviated features per side to show HOW each platform experiences the attack
   GCS (flow-level, 80 features) — Top-10 most-deviated features vs Normal:
     fwd_header_size_min                                d=1.126
     fwd_header_size_max                                d=1.126
-    fwd_last_window_size                               d=1.074
-    fwd_init_window_size                               d=1.074
-    flow_SYN_flag_count                                d=1.074
     flow_pkts_payload.std                              d=0.951
     fwd_pkts_payload.std                               d=0.947
     flow_pkts_payload.max                              d=0.880
     active.min                                         d=0.867
     active.avg                                         d=0.863
-  GCS mean |d| across all features: 0.3758
+    active.max                                         d=0.830
+    flow_pkts_payload.avg                              d=0.808
+    fwd_pkts_payload.max                               d=0.742
+  GCS mean |d| across all features: 0.3356
 
   UAV (packet-level, 92 features) — Top-10 most-deviated features vs Normal:
     radiotap.channel.flags.cck                         d=2.143
@@ -309,11 +308,11 @@ most-deviated features per side to show HOW each platform experiences the attack
     dns.count.auth_rr                                  d=0.132
     dns.count.queries                                  d=0.106
     http.next_response_in                              d=0.101
-    tcp.srcport                                        d=0.095
-  UAV mean |d| across all features: 0.0946
+    http.request.full_uri                              d=0.089
+  UAV mean |d| across all features: 0.0872
 
   Interpretation:
-    GCS mean |d| = 0.3758  |  UAV mean |d| = 0.0946
+    GCS mean |d| = 0.3356  |  UAV mean |d| = 0.0872
     → GCS shows LARGER overall deviation under Fake Landing than UAV.
     GCS sees flow-metric shifts (packet rates, header sizes, IAT);
     UAV sees packet/radio-level shifts (frame length, port usage, signal).
@@ -323,15 +322,15 @@ most-deviated features per side to show HOW each platform experiences the attack
   GCS (flow-level, 80 features) — Top-10 most-deviated features vs Normal:
     fwd_header_size_max                                d=1.086
     fwd_header_size_min                                d=1.086
-    flow_SYN_flag_count                                d=1.033
-    fwd_init_window_size                               d=1.033
-    fwd_last_window_size                               d=1.033
     flow_pkts_payload.std                              d=0.948
     fwd_pkts_payload.std                               d=0.947
     active.avg                                         d=0.869
     active.min                                         d=0.869
     flow_pkts_payload.max                              d=0.861
-  GCS mean |d| across all features: 0.3632
+    flow_pkts_payload.avg                              d=0.789
+    active.max                                         d=0.756
+    fwd_pkts_payload.max                               d=0.709
+  GCS mean |d| across all features: 0.3244
 
   UAV (packet-level, 92 features) — Top-10 most-deviated features vs Normal:
     radiotap.channel.flags.cck                         d=2.415
@@ -344,10 +343,10 @@ most-deviated features per side to show HOW each platform experiences the attack
     dns.count.queries                                  d=0.113
     http.next_response_in                              d=0.101
     http.request.full_uri                              d=0.089
-  UAV mean |d| across all features: 0.0972
+  UAV mean |d| across all features: 0.0905
 
   Interpretation:
-    GCS mean |d| = 0.3632  |  UAV mean |d| = 0.0972
+    GCS mean |d| = 0.3244  |  UAV mean |d| = 0.0905
     → GCS shows LARGER overall deviation under MITM than UAV.
     GCS sees flow-metric shifts (packet rates, header sizes, IAT);
     UAV sees packet/radio-level shifts (frame length, port usage, signal).
@@ -355,17 +354,17 @@ most-deviated features per side to show HOW each platform experiences the attack
 ── Attack: Reconnaissance ──
 
   GCS (flow-level, 80 features) — Top-10 most-deviated features vs Normal:
-    flow_SYN_flag_count                                d=26.524
     fwd_header_size_max                                d=6.568
     fwd_header_size_min                                d=6.568
-    flow_RST_flag_count                                d=1.752
-    flow_ACK_flag_count                                d=1.752
     bwd_header_size_min                                d=1.588
     bwd_header_size_max                                d=1.588
     fwd_pkts_payload.max                               d=1.318
     fwd_pkts_payload.avg                               d=1.231
     flow_pkts_payload.max                              d=1.192
-  GCS mean |d| across all features: 1.0183
+    flow_duration                                      d=1.135
+    flow_iat.tot                                       d=1.135
+    fwd_iat.tot                                        d=1.134
+  GCS mean |d| across all features: 0.6262
 
   UAV (packet-level, 96 features) — Top-10 most-deviated features vs Normal:
     radiotap.channel.flags.cck                         d=2.459
@@ -373,15 +372,15 @@ most-deviated features per side to show HOW each platform experiences the attack
     frame.len                                          d=1.343
     udp.srcport                                        d=1.331
     nbns                                               d=0.986
-    wlan_radio.end_tsf                                 d=0.632
-    wlan_radio.data_rate                               d=0.632
-    wlan_radio.start_tsf                               d=0.632
-    wlan_radio.channel                                 d=0.632
-    wlan_radio.signal_dbm                              d=0.632
-  UAV mean |d| across all features: 0.1564
+    udp.dstport                                        d=0.277
+    dns.count.auth_rr                                  d=0.132
+    dns.count.queries                                  d=0.121
+    http.request.line                                  d=0.105
+    http.next_response_in                              d=0.101
+  UAV mean |d| across all features: 0.0971
 
   Interpretation:
-    GCS mean |d| = 1.0183  |  UAV mean |d| = 0.1564
+    GCS mean |d| = 0.6262  |  UAV mean |d| = 0.0971
     → GCS shows LARGER overall deviation under Reconnaissance than UAV.
     GCS sees flow-metric shifts (packet rates, header sizes, IAT);
     UAV sees packet/radio-level shifts (frame length, port usage, signal).
@@ -389,17 +388,17 @@ most-deviated features per side to show HOW each platform experiences the attack
 ── Attack: Scanning ──
 
   GCS (flow-level, 80 features) — Top-10 most-deviated features vs Normal:
-    flow_SYN_flag_count                                d=1.410
-    fwd_pkts_payload.max                               d=1.319
-    fwd_pkts_payload.avg                               d=1.233
-    flow_pkts_payload.max                              d=1.193
-    flow_duration                                      d=1.140
-    flow_iat.tot                                       d=1.140
-    fwd_iat.tot                                        d=1.139
-    flow_pkts_payload.avg                              d=1.117
-    fwd_pkts_payload.min                               d=1.030
-    flow_pkts_payload.min                              d=0.982
-  GCS mean |d| across all features: 0.4940
+    fwd_header_size_max                                d=6.568
+    fwd_header_size_min                                d=6.568
+    bwd_header_size_min                                d=1.588
+    bwd_header_size_max                                d=1.588
+    fwd_pkts_payload.max                               d=1.318
+    fwd_pkts_payload.avg                               d=1.231
+    flow_pkts_payload.max                              d=1.192
+    flow_duration                                      d=1.135
+    flow_iat.tot                                       d=1.135
+    fwd_iat.tot                                        d=1.134
+  GCS mean |d| across all features: 0.6262
 
   UAV (packet-level, 94 features) — Top-10 most-deviated features vs Normal:
     udp.length                                         d=1.888
@@ -412,10 +411,10 @@ most-deviated features per side to show HOW each platform experiences the attack
     dns.count.queries                                  d=0.121
     http.request.line                                  d=0.105
     http.next_response_in                              d=0.101
-  UAV mean |d| across all features: 0.0832
+  UAV mean |d| across all features: 0.0763
 
   Interpretation:
-    GCS mean |d| = 0.4940  |  UAV mean |d| = 0.0832
+    GCS mean |d| = 0.6262  |  UAV mean |d| = 0.0763
     → GCS shows LARGER overall deviation under Scanning than UAV.
     GCS sees flow-metric shifts (packet rates, header sizes, IAT);
     UAV sees packet/radio-level shifts (frame length, port usage, signal).
@@ -439,13 +438,13 @@ most-deviated features per side to show HOW each platform experiences the attack
     fwd_header_size_min                                d=0.973
     flow_pkts_payload.std                              d=0.953
     fwd_pkts_payload.std                               d=0.948
-    fwd_init_window_size                               d=0.917
-    fwd_last_window_size                               d=0.917
-    flow_SYN_flag_count                                d=0.917
     active.min                                         d=0.858
     active.avg                                         d=0.853
     active.max                                         d=0.841
-  Mean |d| across all features: 0.3814
+    flow_pkts_payload.max                              d=0.834
+    active.tot                                         d=0.773
+    flow_pkts_payload.avg                              d=0.762
+  Mean |d| across all features: 0.3470
 
 ── Attack: GPS Jamming ──
   UAV only — Top-10 most-deviated features vs Normal:
@@ -476,81 +475,81 @@ which features are most sensitive to attacks.
 
 4a. Attack impact ranking (mean |d| across all features):
 
-   1. DDoS                      mean|d| = 15.8551
-   2. DoS                       mean|d| = 8.4474
-   3. Brute Force               mean|d| = 1.4554
-   4. Reconnaissance            mean|d| = 1.0183
-   5. Replay                    mean|d| = 0.5263
-   6. Scanning                  mean|d| = 0.4940
-   7. Evil Twin                 mean|d| = 0.3814
-   8. Fake Landing              mean|d| = 0.3758
-   9. De-authentication         mean|d| = 0.3632
-  10. MITM                      mean|d| = 0.3632
+   1. DoS                       mean|d| = 1.2143
+   2. DDoS                      mean|d| = 1.1493
+   3. Brute Force               mean|d| = 0.9913
+   4. Reconnaissance            mean|d| = 0.6262
+   5. Scanning                  mean|d| = 0.6262
+   6. Replay                    mean|d| = 0.5263
+   7. Evil Twin                 mean|d| = 0.3470
+   8. Fake Landing              mean|d| = 0.3356
+   9. De-authentication         mean|d| = 0.3244
+  10. MITM                      mean|d| = 0.3244
 
 4b. Top-15 features with highest VARIANCE of d across attacks
     (features whose deviation changes most depending on attack type):
 
-   1. flow_SYN_flag_count                                std(d)=93.1118
-   2. fwd_last_window_size                               std(d)=91.4083
-   3. fwd_init_window_size                               std(d)=91.3534
-   4. flow_RST_flag_count                                std(d)=81.8516
-   5. flow_ACK_flag_count                                std(d)=38.1935
-   6. fwd_header_size_min                                std(d)=6.8166
-   7. fwd_header_size_max                                std(d)=6.7184
-   8. bwd_header_size_max                                std(d)=4.6719
-   9. bwd_header_size_min                                std(d)=4.4410
-  10. bwd_iat.avg                                        std(d)=2.6912
-  11. bwd_iat.max                                        std(d)=2.5488
-  12. bwd_iat.std                                        std(d)=2.4710
-  13. bwd_PSH_flag_count                                 std(d)=2.3641
-  14. fwd_PSH_flag_count                                 std(d)=2.3579
-  15. bwd_pkts_payload.std                               std(d)=2.1642
+   1. fwd_header_size_min                                std(d)=6.5304
+   2. fwd_header_size_max                                std(d)=6.4535
+   3. bwd_header_size_max                                std(d)=4.6263
+   4. bwd_header_size_min                                std(d)=4.3992
+   5. bwd_iat.avg                                        std(d)=2.6917
+   6. bwd_iat.max                                        std(d)=2.5491
+   7. bwd_iat.std                                        std(d)=2.4710
+   8. bwd_pkts_per_sec                                   std(d)=1.0223
+   9. flow_pkts_per_sec                                  std(d)=0.9307
+  10. fwd_pkts_per_sec                                   std(d)=0.8191
+  11. bwd_iat.tot                                        std(d)=0.4564
+  12. fwd_iat.tot                                        std(d)=0.4208
+  13. flow_iat.tot                                       std(d)=0.4203
+  14. flow_duration                                      std(d)=0.4174
+  15. fwd_pkts_payload.avg                               std(d)=0.3147
 
 4c. Top-15 features with highest MEAN d across attacks
     (features universally shifted regardless of attack type):
 
-   1. flow_SYN_flag_count                                mean(d)=45.0261
-   2. fwd_init_window_size                               mean(d)=41.3728
-   3. fwd_last_window_size                               mean(d)=41.2609
-   4. flow_RST_flag_count                                mean(d)=34.4856
-   5. flow_ACK_flag_count                                mean(d)=19.3828
-   6. fwd_header_size_min                                mean(d)=6.0297
-   7. fwd_header_size_max                                mean(d)=5.7854
-   8. bwd_header_size_max                                mean(d)=3.5090
-   9. bwd_header_size_min                                mean(d)=3.2091
-  10. fwd_pkts_payload.max                               mean(d)=1.0453
-  11. flow_pkts_payload.max                              mean(d)=1.0250
-  12. bwd_iat.avg                                        mean(d)=1.0239
-  13. flow_pkts_payload.avg                              mean(d)=0.9748
-  14. bwd_iat.max                                        mean(d)=0.9688
-  15. fwd_pkts_payload.avg                               mean(d)=0.9677
+   1. fwd_header_size_min                                mean(d)=6.6399
+   2. fwd_header_size_max                                mean(d)=6.3956
+   3. bwd_header_size_max                                mean(d)=3.5897
+   4. bwd_header_size_min                                mean(d)=3.2898
+   5. fwd_pkts_payload.max                               mean(d)=1.0452
+   6. flow_pkts_payload.max                              mean(d)=1.0250
+   7. bwd_iat.avg                                        mean(d)=1.0225
+   8. flow_pkts_payload.avg                              mean(d)=0.9748
+   9. bwd_iat.max                                        mean(d)=0.9681
+  10. fwd_pkts_payload.avg                               mean(d)=0.9676
+  11. bwd_iat.std                                        mean(d)=0.9125
+  12. flow_pkts_payload.std                              mean(d)=0.8999
+  13. fwd_pkts_payload.std                               mean(d)=0.8564
+  14. flow_pkts_payload.min                              mean(d)=0.8525
+  15. active.avg                                         mean(d)=0.8275
 
 4d. Attack similarity matrix (Pearson r of deviation vectors):
 
                               Brute Fo     DDoS De-authe      DoS Evil Twi Fake Lan     MITM Reconnai   Replay Scanning
-    Brute Force                  1.000    0.047   -0.002    0.129   -0.055   -0.004   -0.002    0.141    0.274   -0.090
-    DDoS                         0.047    1.000    0.299    0.975    0.235    0.309    0.299    0.511   -0.144    0.222
-    De-authentication           -0.002    0.299    1.000    0.334    0.933    0.968    1.000    0.396    0.575    0.583
-    DoS                          0.129    0.975    0.334    1.000    0.266    0.344    0.334    0.531   -0.087    0.232
-    Evil Twin                   -0.055    0.235    0.933    0.266    1.000    0.981    0.933    0.363    0.608    0.696
-    Fake Landing                -0.004    0.309    0.968    0.344    0.981    1.000    0.968    0.411    0.611    0.637
-    MITM                        -0.002    0.299    1.000    0.334    0.933    0.968    1.000    0.396    0.575    0.583
-    Reconnaissance               0.141    0.511    0.396    0.531    0.363    0.411    0.396    1.000    0.235    0.384
-    Replay                       0.274   -0.144    0.575   -0.087    0.608    0.611    0.575    0.235    1.000    0.395
-    Scanning                    -0.090    0.222    0.583    0.232    0.696    0.637    0.583    0.384    0.395    1.000
+    Brute Force                  1.000    0.667    0.257    0.670    0.216    0.261    0.257    0.565    0.477    0.565
+    DDoS                         0.667    1.000    0.433    0.989    0.411    0.451    0.433    0.877    0.739    0.877
+    De-authentication            0.257    0.433    1.000    0.448    0.927    0.962    1.000    0.621    0.713    0.621
+    DoS                          0.670    0.989    0.448    1.000    0.414    0.465    0.448    0.919    0.797    0.919
+    Evil Twin                    0.216    0.411    0.927    0.414    1.000    0.982    0.927    0.611    0.718    0.611
+    Fake Landing                 0.261    0.451    0.962    0.465    0.982    1.000    0.962    0.654    0.757    0.654
+    MITM                         0.257    0.433    1.000    0.448    0.927    0.962    1.000    0.621    0.713    0.621
+    Reconnaissance               0.565    0.877    0.621    0.919    0.611    0.654    0.621    1.000    0.962    1.000
+    Replay                       0.477    0.739    0.713    0.797    0.718    0.757    0.713    0.962    1.000    0.962
+    Scanning                     0.565    0.877    0.621    0.919    0.611    0.654    0.621    1.000    0.962    1.000
 
 4e. Quick-reference — largest single-feature deviation per attack:
 
   Brute Force               fwd_header_size_min                                d=9.578
-  DDoS                      flow_SYN_flag_count                                d=281.576
+  DDoS                      fwd_header_size_max                                d=15.127
   De-authentication         fwd_header_size_max                                d=1.086
-  DoS                       flow_SYN_flag_count                                d=135.296
+  DoS                       fwd_header_size_max                                d=19.836
   Evil Twin                 fwd_header_size_max                                d=0.973
   Fake Landing              fwd_header_size_max                                d=1.126
   MITM                      fwd_header_size_max                                d=1.086
-  Reconnaissance            flow_SYN_flag_count                                d=26.524
+  Reconnaissance            fwd_header_size_max                                d=6.568
   Replay                    fwd_header_size_max                                d=4.450
-  Scanning                  flow_SYN_flag_count                                d=1.410
+  Scanning                  fwd_header_size_max                                d=6.568
 
 ============================================================
   UAV (packet-level)
@@ -558,73 +557,73 @@ which features are most sensitive to attacks.
 
 4a. Attack impact ranking (mean |d| across all features):
 
-   1. DoS                       mean|d| = 0.9858
-   2. DDoS                      mean|d| = 0.2819
-   3. De-authentication         mean|d| = 0.2525
-   4. Reconnaissance            mean|d| = 0.1841
-   5. Brute Force               mean|d| = 0.1815
-   6. MITM                      mean|d| = 0.1098
-   7. Fake Landing              mean|d| = 0.1058
-   8. GPS Jamming               mean|d| = 0.1020
-   9. Scanning                  mean|d| = 0.0933
+   1. DDoS                      mean|d| = 0.1817
+   2. Brute Force               mean|d| = 0.1280
+   3. Reconnaissance            mean|d| = 0.1171
+   4. De-authentication         mean|d| = 0.1068
+   5. MITM                      mean|d| = 0.1041
+   6. GPS Jamming               mean|d| = 0.1020
+   7. Fake Landing              mean|d| = 0.0996
+   8. DoS                       mean|d| = 0.0888
+   9. Scanning                  mean|d| = 0.0844
 
 4b. Top-15 features with highest VARIANCE of d across attacks
     (features whose deviation changes most depending on attack type):
 
-   1. radiotap.channel.freq                              std(d)=8.9485
-   2. radiotap.length                                    std(d)=2.9062
-   3. tcp.analysis                                       std(d)=1.8102
-   4. radiotap.mactime                                   std(d)=1.5100
-   5. wlan_radio.end_tsf                                 std(d)=1.4914
-   6. wlan_radio.timestamp                               std(d)=1.4914
-   7. wlan_radio.start_tsf                               std(d)=0.9905
-   8. wlan_radio.signal_dbm                              std(d)=0.8809
-   9. tcp.srcport                                        std(d)=0.6792
-  10. radiotap.channel.flags.ofdm                        std(d)=0.6381
-  11. tcp.time_relative                                  std(d)=0.6209
-  12. wlan_radio.data_rate                               std(d)=0.6009
-  13. radiotap.channel.flags.cck                         std(d)=0.5911
-  14. radiotap.datarate                                  std(d)=0.5465
-  15. tcp.time_delta                                     std(d)=0.5098
+   1. tcp.analysis                                       std(d)=1.8102
+   2. radiotap.channel.flags.cck                         std(d)=0.5911
+   3. frame.len                                          std(d)=0.3990
+   4. tcp.ack                                            std(d)=0.0798
+   5. udp.srcport                                        std(d)=0.0563
+   6. ldap                                               std(d)=0.0343
+   7. udp.length                                         std(d)=0.0311
+   8. smb.access.generic_execute                         std(d)=0.0235
+   9. udp.dstport                                        std(d)=0.0016
+  10. nbss.length                                        std(d)=0.0001
+  11. ssh.mpint_length                                   std(d)=0.0000
+  12. ssh.server_host_key_algorithms_length              std(d)=0.0000
+  13. ssh.mac_algorithms_server_to_client_length         std(d)=0.0000
+  14. ssh.host_key.length                                std(d)=0.0000
+  15. ssh.mac_algorithms_client_to_server_length         std(d)=0.0000
 
 4c. Top-15 features with highest MEAN d across attacks
     (features universally shifted regardless of attack type):
 
-   1. radiotap.channel.freq                              mean(d)=3.0950
-   2. radiotap.channel.flags.cck                         mean(d)=1.9739
-   3. udp.length                                         mean(d)=1.8707
-   4. udp.srcport                                        mean(d)=1.3050
-   5. radiotap.length                                    mean(d)=1.1084
-   6. tcp.analysis                                       mean(d)=0.8667
-   7. frame.len                                          mean(d)=0.8222
-   8. wlan_radio.timestamp                               mean(d)=0.6884
-   9. wlan_radio.end_tsf                                 mean(d)=0.6457
-  10. radiotap.mactime                                   mean(d)=0.5634
-  11. wlan_radio.start_tsf                               mean(d)=0.5357
-  12. wlan_radio.signal_dbm                              mean(d)=0.4380
-  13. tcp.srcport                                        mean(d)=0.3658
-  14. wlan_radio.data_rate                               mean(d)=0.3459
-  15. tcp.time_delta                                     mean(d)=0.2788
+   1. radiotap.channel.flags.cck                         mean(d)=1.9739
+   2. udp.length                                         mean(d)=1.8707
+   3. udp.srcport                                        mean(d)=1.3050
+   4. tcp.analysis                                       mean(d)=0.8667
+   5. frame.len                                          mean(d)=0.8222
+   6. udp.dstport                                        mean(d)=0.2767
+   7. nbss.length                                        mean(d)=0.0857
+   8. tcp.ack                                            mean(d)=0.0825
+   9. smb.access.generic_execute                         mean(d)=0.0726
+  10. ldap                                               mean(d)=0.0685
+  11. ssh.mac_algorithms_client_to_server_length         mean(d)=0.0000
+  12. ssh.mac_algorithms_server_to_client_length         mean(d)=0.0000
+  13. ssh.mpint_length                                   mean(d)=0.0000
+  14. ssh.server_host_key_algorithms_length              mean(d)=0.0000
+  15. ssh.kex_algorithms_length                          mean(d)=0.0000
 
 4d. Attack similarity matrix (Pearson r of deviation vectors):
 
                               Brute Fo     DDoS De-authe      DoS Fake Lan GPS Jamm     MITM Reconnai Scanning
-    Brute Force                  1.000    0.753    0.524   -0.016    0.783    0.709    0.782    0.661    0.642
-    DDoS                         0.753    1.000    0.259   -0.046    0.429    0.403    0.423    0.336    0.378
-    De-authentication            0.524    0.259    1.000    0.385    0.712    0.645    0.717    0.792    0.626
-    DoS                         -0.016   -0.046    0.385    1.000    0.028    0.019    0.029    0.081    0.029
-    Fake Landing                 0.783    0.429    0.712    0.028    1.000    0.953    0.998    0.895    0.882
-    GPS Jamming                  0.709    0.403    0.645    0.019    0.953    1.000    0.937    0.871    0.962
-    MITM                         0.782    0.423    0.717    0.029    0.998    0.937    1.000    0.895    0.855
-    Reconnaissance               0.661    0.336    0.792    0.081    0.895    0.871    0.895    1.000    0.819
-    Scanning                     0.642    0.378    0.626    0.029    0.882    0.962    0.855    0.819    1.000
+    Brute Force                  1.000    0.809    0.914    0.879    0.894    0.838    0.896    0.888    0.769
+    DDoS                         0.809    1.000    0.515    0.474    0.475    0.472    0.471    0.477    0.453
+    De-authentication            0.914    0.515    1.000    0.986    0.983    0.899    0.986    0.959    0.837
+    DoS                          0.879    0.474    0.986    1.000    0.972    0.899    0.969    0.934    0.871
+    Fake Landing                 0.894    0.475    0.983    0.972    1.000    0.955    0.998    0.991    0.888
+    GPS Jamming                  0.838    0.472    0.899    0.899    0.955    1.000    0.939    0.964    0.966
+    MITM                         0.896    0.471    0.986    0.969    0.998    0.939    1.000    0.990    0.860
+    Reconnaissance               0.888    0.477    0.959    0.934    0.991    0.964    0.990    1.000    0.877
+    Scanning                     0.769    0.453    0.837    0.871    0.888    0.966    0.860    0.877    1.000
 
 4e. Quick-reference — largest single-feature deviation per attack:
 
   Brute Force               radiotap.channel.flags.cck                         d=2.431
   DDoS                      tcp.analysis                                       d=5.494
   De-authentication         radiotap.channel.flags.cck                         d=2.406
-  DoS                       radiotap.channel.freq                              d=26.944
+  DoS                       udp.length                                         d=1.888
   Fake Landing              radiotap.channel.flags.cck                         d=2.143
   GPS Jamming               udp.length                                         d=1.888
   MITM                      radiotap.channel.flags.cck                         d=2.415
@@ -647,9 +646,10 @@ Q2 (Feature counts): How many numeric features are available per attack?
      86–116 packet-level features. They are disjoint spaces.
 
 Q3 (Cross-view — same attack, GCS vs UAV impact):
-   → Section 3. For each attack, Cohen's d quantifies how far each feature
-     deviates from its Normal baseline. A larger mean |d| means the platform
-     was more severely affected. Comparing GCS mean|d| vs UAV mean|d| for the
+   → Section 3. For each attack, range-normalized deviation quantifies how
+     far each feature deviates from its Normal baseline, as a fraction of the
+     feature's own observed range. A larger mean |d| means the platform was
+     more severely affected. Comparing GCS mean|d| vs UAV mean|d| for the
      same attack reveals which side is more impacted.
 
 Q4 (Within-view — different attacks, same platform):
