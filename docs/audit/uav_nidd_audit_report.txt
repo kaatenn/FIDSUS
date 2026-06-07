@@ -1,6 +1,6 @@
 
 ======================================================================
-DATA SOURCES
+0. DATA SOURCES & FEATURE/LABEL INVENTORY
 ======================================================================
 
 This audit walks through individual folders in:
@@ -14,6 +14,300 @@ GCS CSVs use two formats:
 
 UAV CSVs all use tshark packet-level export (~170 columns, comma-separated).
   Replay Attack-UAV has NO CSV (only .pcap file) — excluded from UAV analysis.
+
+
+----------------------------------------------------------------------
+0a. GCS FEATURE INVENTORY (flow-level)
+----------------------------------------------------------------------
+
+Total unique numeric features across all attacks: 90
+
+  Forward packet/byte stats (7):
+    fwd_pkts_tot
+    fwd_pkts_per_sec
+    fwd_pkts_payload.avg
+    fwd_pkts_payload.max
+    fwd_pkts_payload.min
+    fwd_pkts_payload.std
+    fwd_pkts_payload.tot
+  Backward packet/byte stats (7):
+    bwd_pkts_tot
+    bwd_pkts_per_sec
+    bwd_pkts_payload.avg
+    bwd_pkts_payload.max
+    bwd_pkts_payload.min
+    bwd_pkts_payload.std
+    bwd_pkts_payload.tot
+  Flow packet/byte stats (6):
+    flow_pkts_per_sec
+    flow_pkts_payload.avg
+    flow_pkts_payload.max
+    flow_pkts_payload.min
+    flow_pkts_payload.std
+    flow_pkts_payload.tot
+  Header size stats (4):
+    fwd_header_size_max
+    fwd_header_size_min
+    bwd_header_size_max
+    bwd_header_size_min
+  Inter-arrival time (IAT) (15):
+    fwd_iat.avg
+    fwd_iat.max
+    fwd_iat.min
+    fwd_iat.std
+    fwd_iat.tot
+    bwd_iat.avg
+    bwd_iat.max
+    bwd_iat.min
+    bwd_iat.std
+    bwd_iat.tot
+    flow_iat.avg
+    flow_iat.max
+    flow_iat.min
+    flow_iat.std
+    flow_iat.tot
+  Active/Idle stats (8):
+    active.avg
+    active.max
+    active.min
+    active.std
+    idle.avg
+    idle.max
+    idle.min
+    idle.std
+  Bulk & window stats (10):
+    fwd_bulk_packets
+    fwd_bulk_bytes
+    fwd_bulk_rate
+    fwd_init_window_size
+    fwd_last_window_size
+    bwd_bulk_packets
+    bwd_bulk_bytes
+    bwd_bulk_rate
+    bwd_init_window_size
+    bwd_last_window_size
+  Connection metadata (1):
+    flow_duration
+  Other/uncategorized (32):
+    active.tot
+    bwd_PSH_flag_count
+    bwd_URG_flag_count
+    bwd_data_pkts_tot
+    bwd_header_size_tot
+    bwd_subflow_bytes
+    bwd_subflow_pkts
+    down_up_ratio
+    duration
+    flow_ACK_flag_count
+    flow_CWR_flag_count
+    flow_ECE_flag_count
+    flow_FIN_flag_count
+    flow_RST_flag_count
+    flow_SYN_flag_count
+    fwd_PSH_flag_count
+    fwd_URG_flag_count
+    fwd_data_pkts_tot
+    fwd_header_size_tot
+    fwd_subflow_bytes
+    fwd_subflow_pkts
+    idle.tot
+    missed_bytes
+    orig_bytes
+    orig_ip_bytes
+    orig_pkts
+    payload_bytes_per_second
+    resp_bytes
+    resp_ip_bytes
+    resp_pkts
+    tcp.dstport
+    tcp.srcport
+
+  Note: GCS feature space is flow-level — packets, bytes,
+  flags, payload stats, IAT stats, bulk/window stats.
+  Feature names use Zeek-style dotted notation
+  (e.g. fwd_pkts_payload.avg, bwd_iat.std).
+
+----------------------------------------------------------------------
+0b. UAV FEATURE INVENTORY (packet-level)
+----------------------------------------------------------------------
+
+Total unique numeric features across all attacks: 117
+
+  Frame-level (1):
+    frame.len
+  Radiotap (radio/signal) (6):
+    radiotap.channel.flags.cck
+    radiotap.datarate
+    radiotap.dbm_antsignal
+    radiotap.length
+    radiotap.mactime
+    radiotap.present.tsft
+  WLAN / WiFi (2):
+    wlan.duration
+    wlan.seq
+  TCP-level (8):
+    tcp.ack
+    tcp.analysis
+    tcp.checksum
+    tcp.dstport
+    tcp.seq
+    tcp.srcport
+    tcp.time_delta
+    tcp.time_relative
+  UDP-level (3):
+    udp.dstport
+    udp.length
+    udp.srcport
+  DNS (9):
+    dns.count.add_rr
+    dns.count.answers
+    dns.count.auth_rr
+    dns.count.labels
+    dns.count.queries
+    dns.id
+    dns.resp.len
+    dns.resp.ttl
+    dns.time
+  HTTP (6):
+    http.content_length
+    http.next_response_in
+    http.request.full_uri
+    http.request.line
+    http.response.line
+    http.time
+  SMB/SMB2 (1):
+    smb.access.generic_execute
+  SSH (6):
+    ssh.host_key.length
+    ssh.kex_algorithms_length
+    ssh.mac_algorithms_client_to_server_length
+    ssh.mac_algorithms_server_to_client_length
+    ssh.mpint_length
+    ssh.server_host_key_algorithms_length
+  NBNS/NBSS (2):
+    nbns
+    nbss.length
+  LDAP (1):
+    ldap
+  EAPOL (1):
+    eapol.len
+  Other (1):
+    data.len
+  Other/uncategorized (70):
+    arp
+    dns
+    dns.a
+    dns.qry.name.len
+    eapol.keydes.replay_counter
+    http.connection
+    http.content_type
+    http.date
+    http.last_modified
+    http.next_request_in
+    http.request.uri.query.parameter
+    http.request_in
+    http.response.phrase
+    http.response_for.uri
+    http.response_in
+    mdns
+    nbss.continuation_data
+    nbss.type
+    radiotap.channel.flags.ofdm
+    radiotap.channel.freq
+    radiotap.rxflags
+    radiotap.timestamp.ts
+    radiotap.vendor_oui
+    smb.access.generic_read
+    smb.access.generic_write
+    smb.mid
+    smb.nt_status
+    smb.pid.high
+    smb.server_component
+    smb.tid
+    smb2.acct
+    smb2.auth_frame
+    smb2.buffer_code
+    smb2.cmd
+    smb2.data_offset
+    smb2.fid
+    smb2.header_len
+    smb2.msg_id
+    smb2.pid
+    smb2.previous_sesid
+    smb2.sesid
+    smb2.tid
+    smb2.write_length
+    ssdp
+    ssh.compression_algorithms_client_to_server_length
+    ssh.compression_algorithms_server_to_client_length
+    ssh.dh_gex.max
+    ssh.dh_gex.min
+    ssh.dh_gex.nbits
+    ssh.encryption_algorithms_client_to_server_length
+    ssh.encryption_algorithms_server_to_client_length
+    ssh.packet_length
+    ssh.packet_length_encrypted
+    ssh.padding_length
+    ssh.padding_string
+    ssh.protocol
+    tcp.analysis.rto_frame
+    tcp.option_len
+    tcp.payload
+    wlan.fixed.timestamp
+    wlan_radio.channel
+    wlan_radio.data_rate
+    wlan_radio.duration
+    wlan_radio.end_tsf
+    wlan_radio.frequency
+    wlan_radio.phy
+    wlan_radio.signal_dbm
+    wlan_radio.start_tsf
+    wlan_radio.timestamp
+    wlan_rsna_eapol.keydes.data_len
+
+  Note: UAV feature space is packet-level — frame, radiotap,
+  WLAN, IP, TCP/UDP, DNS, HTTP, SMB, SSH, ARP, NBNS, EAPOL,
+  DHCP, BOOTP, NTP, ICMP fields.
+  Features are tshark export columns, each packet = one row.
+  GCS and UAV feature spaces are completely disjoint.
+
+----------------------------------------------------------------------
+0c. LABEL INVENTORY
+----------------------------------------------------------------------
+
+GCS attack types (11):
+  Brute Force            (    10,161 samples)
+  DDoS                   ( 1,585,741 samples)
+  De-authentication      (     1,656 samples)
+  DoS                    ( 3,395,955 samples)
+  Evil Twin              (        71 samples)
+  Fake Landing           (       298 samples)
+  MITM                   (     1,656 samples)
+  Normal                 (       109 samples)
+  Reconnaissance         (    51,145 samples)
+  Replay                 (     8,826 samples)
+  Scanning               (    51,145 samples)
+
+UAV attack types (11):
+  Brute Force            (   175,925 samples)
+  DDoS                   ( 3,171,810 samples)
+  De-authentication      (    40,583 samples)
+  DoS                    ( 1,214,433 samples)
+  Fake Landing           (    24,050 samples)
+  GPS Jamming            (    41,600 samples)
+  MITM                   (   151,586 samples)
+  Normal                 (    11,733 samples)
+  Reconnaissance         (         6 samples)
+  Replay                 (         0 samples)
+  Scanning               (     9,030 samples)
+
+Attacks present in BOTH: ['Brute Force', 'DDoS', 'De-authentication', 'DoS', 'Fake Landing', 'MITM', 'Normal', 'Reconnaissance', 'Replay', 'Scanning']
+Attacks present ONLY in GCS: ['Evil Twin']
+Attacks present ONLY in UAV: ['GPS Jamming']
+
+----------------------------------------------------------------------
+FILE INVENTORY
+----------------------------------------------------------------------
 
 GCS file inventory:
   Brute Force           : 1 file(s)

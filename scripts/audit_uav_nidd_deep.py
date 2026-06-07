@@ -481,9 +481,20 @@ def main():
 
     print("\n[3/3] Generating audit report ...")
 
+    # Collect feature names for Section 0
+    gcs_feature_set = set()
+    uav_feature_set = set()
+    for att, s in gcs_stats.items():
+        gcs_feature_set.update(s.get("numeric_cols", []))
+    for att, s in uav_stats.items():
+        uav_feature_set.update(s.get("numeric_cols", []))
+    gcs_features_sorted = sorted(gcs_feature_set)
+    uav_features_sorted = sorted(uav_feature_set)
+
     with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
-        # ── 0. Data Sources ──────────────────────────────────────────────
-        sepline(f, "DATA SOURCES")
+        # ── 0. Data Sources & Feature/Label Inventory ────────────────────
+        sepline(f, "0. DATA SOURCES & FEATURE/LABEL INVENTORY")
+
         f.write("This audit walks through individual folders in:\n")
         f.write(f"  GCS: {GCS_BASE}\n")
         f.write(f"  UAV: {UAV_BASE}\n\n")
@@ -498,6 +509,218 @@ def main():
         f.write("  Replay Attack-UAV has NO CSV (only .pcap file) — excluded from "
                 "UAV analysis.\n\n")
 
+        # ── 0a. GCS Feature Inventory ───────────────────────────────────
+        sepline(f, "0a. GCS FEATURE INVENTORY (flow-level)", char="-")
+        f.write(f"Total unique numeric features across all attacks: "
+                f"{len(gcs_features_sorted)}\n\n")
+
+        gcs_feat_groups = {
+            "Forward packet/byte stats": [
+                "fwd_pkts_tot", "fwd_pkts_per_sec", "fwd_pkts_payload.avg",
+                "fwd_pkts_payload.max", "fwd_pkts_payload.min",
+                "fwd_pkts_payload.std", "fwd_pkts_payload.tot",
+            ],
+            "Backward packet/byte stats": [
+                "bwd_pkts_tot", "bwd_pkts_per_sec", "bwd_pkts_payload.avg",
+                "bwd_pkts_payload.max", "bwd_pkts_payload.min",
+                "bwd_pkts_payload.std", "bwd_pkts_payload.tot",
+            ],
+            "Flow packet/byte stats": [
+                "flow_pkts_tot", "flow_pkts_per_sec", "flow_pkts_payload.avg",
+                "flow_pkts_payload.max", "flow_pkts_payload.min",
+                "flow_pkts_payload.std", "flow_pkts_payload.tot",
+            ],
+            "Header size stats": [
+                "fwd_header_size_avg", "fwd_header_size_max",
+                "fwd_header_size_min", "fwd_header_size_std",
+                "bwd_header_size_avg", "bwd_header_size_max",
+                "bwd_header_size_min", "bwd_header_size_std",
+            ],
+            "Inter-arrival time (IAT)": [
+                "fwd_iat.avg", "fwd_iat.max", "fwd_iat.min",
+                "fwd_iat.std", "fwd_iat.tot",
+                "bwd_iat.avg", "bwd_iat.max", "bwd_iat.min",
+                "bwd_iat.std", "bwd_iat.tot",
+                "flow_iat.avg", "flow_iat.max", "flow_iat.min",
+                "flow_iat.std", "flow_iat.tot",
+            ],
+            "Active/Idle stats": [
+                "active.avg", "active.max", "active.min", "active.std",
+                "idle.avg", "idle.max", "idle.min", "idle.std",
+            ],
+            "Bulk & window stats": [
+                "fwd_bulk_packets", "fwd_bulk_bytes", "fwd_bulk_duration",
+                "fwd_bulk_rate", "fwd_init_window_size", "fwd_last_window_size",
+                "bwd_bulk_packets", "bwd_bulk_bytes", "bwd_bulk_duration",
+                "bwd_bulk_rate", "bwd_init_window_size", "bwd_last_window_size",
+            ],
+            "Flag counts": [
+                "fwd_PSH", "fwd_SYN", "fwd_URG", "fwd_ACK", "fwd_FIN",
+                "fwd_RST", "fwd_CWR", "fwd_ECE",
+                "bwd_PSH", "bwd_SYN", "bwd_URG", "bwd_ACK", "bwd_FIN",
+                "bwd_RST", "bwd_CWR", "bwd_ECE",
+            ],
+            "Connection metadata": ["flow_duration", "tot_fwd_pkts", "tot_bwd_pkts"],
+        }
+        for group, feat_list in gcs_feat_groups.items():
+            existing = [x for x in feat_list if x in gcs_feature_set]
+            if existing:
+                f.write(f"  {group} ({len(existing)}):\n")
+                for feat in existing:
+                    f.write(f"    {feat}\n")
+
+        # Catch any features not in our grouping
+        grouped_feats = set()
+        for v in gcs_feat_groups.values():
+            grouped_feats.update(v)
+        remaining = [x for x in gcs_features_sorted if x not in grouped_feats]
+        if remaining:
+            f.write(f"  Other/uncategorized ({len(remaining)}):\n")
+            for feat in remaining:
+                f.write(f"    {feat}\n")
+
+        f.write(f"\n  Note: GCS feature space is flow-level — packets, bytes,\n")
+        f.write(f"  flags, payload stats, IAT stats, bulk/window stats.\n")
+        f.write(f"  Feature names use Zeek-style dotted notation\n")
+        f.write(f"  (e.g. fwd_pkts_payload.avg, bwd_iat.std).\n")
+
+        # ── 0b. UAV Feature Inventory ───────────────────────────────────
+        sepline(f, "0b. UAV FEATURE INVENTORY (packet-level)", char="-")
+        f.write(f"Total unique numeric features across all attacks: "
+                f"{len(uav_features_sorted)}\n\n")
+
+        uav_feat_groups = {
+            "Frame-level": [
+                "frame.cap_len", "frame.len", "frame.number",
+            ],
+            "Radiotap (radio/signal)": [
+                "radiotap.channel.flags.cck", "radiotap.datarate",
+                "radiotap.dbm_antsignal", "radiotap.length",
+                "radiotap.mactime", "radiotap.present.tsft",
+                "radiotap.present.flags", "radiotap.present.channel",
+                "radiotap.present.dbm_antsignal",
+            ],
+            "WLAN / WiFi": [
+                "wlan.duration", "wlan.fcs", "wlan.fcs.status",
+                "wlan.seq", "wlan.fragment", "wlan.fragments",
+            ],
+            "IP-level": [
+                "ip.dsfield.dscp", "ip.dsfield.ecn", "ip.flags.df",
+                "ip.flags.mf", "ip.flags.rb", "ip.frag_offset",
+                "ip.hdr_len", "ip.id", "ip.len",
+            ],
+            "TCP-level": [
+                "tcp.ack", "tcp.analysis", "tcp.checksum",
+                "tcp.connection.syn", "tcp.connection.fin",
+                "tcp.connection.rst", "tcp.dstport", "tcp.flags",
+                "tcp.hdr_len", "tcp.len", "tcp.nxtseq",
+                "tcp.options", "tcp.port", "tcp.seq",
+                "tcp.srcport", "tcp.stream", "tcp.time_delta",
+                "tcp.time_relative", "tcp.urgent_pointer",
+                "tcp.window_size", "tcp.window_size_scalefactor",
+            ],
+            "UDP-level": [
+                "udp.checksum", "udp.checksum.status",
+                "udp.dstport", "udp.length", "udp.port",
+                "udp.srcport", "udp.stream",
+            ],
+            "DNS": [
+                "dns.count.add_rr", "dns.count.answers",
+                "dns.count.auth_rr", "dns.count.labels",
+                "dns.count.queries", "dns.flags.authenticated",
+                "dns.flags.recavail", "dns.flags.recdesired",
+                "dns.flags.truncated", "dns.id",
+                "dns.qry.type", "dns.resp.len", "dns.resp.ttl",
+                "dns.resp.type", "dns.time",
+            ],
+            "HTTP": [
+                "http.content_length", "http.next_response_in",
+                "http.request.full_uri", "http.request.line",
+                "http.request.number", "http.response.code",
+                "http.response.line", "http.response.number",
+                "http.time",
+            ],
+            "SMB/SMB2": [
+                "smb.access.generic_execute",
+                "smb2.secblob", "smb2.secblob_len",
+                "smb2.sesetup.reqblob_len",
+                "smb2.sesetup.respblob_len",
+            ],
+            "SSH": [
+                "ssh.direction", "ssh.encrypted_packet",
+                "ssh.host_key.length",
+                "ssh.host_key_algorithms_length",
+                "ssh.kex_algorithms_length",
+                "ssh.mac_algorithms_client_to_server_length",
+                "ssh.mac_algorithms_server_to_client_length",
+                "ssh.mpint_length",
+                "ssh.server_host_key_algorithms_length",
+            ],
+            "ICMP": ["icmp.code", "icmp.type"],
+            "ICMPv6": ["icmpv6.code", "icmpv6.type"],
+            "ARP": ["arp.dst.proto_ipv4", "arp.opcode",
+                    "arp.proto.size", "arp.src.proto_ipv4"],
+            "NBNS/NBSS": ["nbns", "nbss", "nbss.length"],
+            "LDAP": ["ldap"],
+            "EAPOL": ["eapol.keydes.key_len", "eapol.len",
+                      "eapol.type"],
+            "Other": ["data.len", "browser.server_type",
+                      "dhcp.option.dhcp", "ntp.priv.recv_time_stamp",
+                      "ntp.priv.refid",
+                      "dhcpv6.elapsed_time", "dhcpv6.ia.na.iaaddr",
+                      "dhcpv6.iana.n1.iaaddr", "dhcpv6.iana.n2.iaaddr",
+                      "dhcpv6.xid",
+                      "bootp.hops", "bootp.id",
+                      ],
+        }
+        for group, feat_list in uav_feat_groups.items():
+            existing = [x for x in feat_list if x in uav_feature_set]
+            if existing:
+                f.write(f"  {group} ({len(existing)}):\n")
+                for feat in existing:
+                    f.write(f"    {feat}\n")
+
+        # Catch any features not in our grouping
+        grouped_uav = set()
+        for v in uav_feat_groups.values():
+            grouped_uav.update(v)
+        remaining_uav = [x for x in uav_features_sorted if x not in grouped_uav]
+        if remaining_uav:
+            f.write(f"  Other/uncategorized ({len(remaining_uav)}):\n")
+            for feat in remaining_uav:
+                f.write(f"    {feat}\n")
+
+        f.write(f"\n  Note: UAV feature space is packet-level — frame, radiotap,\n")
+        f.write(f"  WLAN, IP, TCP/UDP, DNS, HTTP, SMB, SSH, ARP, NBNS, EAPOL,\n")
+        f.write(f"  DHCP, BOOTP, NTP, ICMP fields.\n")
+        f.write(f"  Features are tshark export columns, each packet = one row.\n")
+        f.write(f"  GCS and UAV feature spaces are completely disjoint.\n")
+
+        # ── 0c. Label Inventory ─────────────────────────────────────────
+        sepline(f, "0c. LABEL INVENTORY", char="-")
+
+        gcs_attacks_list = sorted(gcs_stats.keys())
+        uav_attacks_list = sorted(uav_stats.keys())
+
+        f.write(f"GCS attack types ({len(gcs_attacks_list)}):\n")
+        for att in gcs_attacks_list:
+            cnt = gcs_stats[att]["count"]
+            f.write(f"  {att:<22s} ({cnt:>10,} samples)\n")
+
+        f.write(f"\nUAV attack types ({len(uav_attacks_list)}):\n")
+        for att in uav_attacks_list:
+            cnt = uav_stats[att]["count"]
+            f.write(f"  {att:<22s} ({cnt:>10,} samples)\n")
+
+        f.write(f"\nAttacks present in BOTH: "
+                f"{sorted(set(gcs_attacks_list) & set(uav_attacks_list))}\n")
+        f.write(f"Attacks present ONLY in GCS: "
+                f"{sorted(set(gcs_attacks_list) - set(uav_attacks_list))}\n")
+        f.write(f"Attacks present ONLY in UAV: "
+                f"{sorted(set(uav_attacks_list) - set(gcs_attacks_list))}\n")
+
+        # ── File Inventory ───────────────────────────────────────────────
+        sepline(f, "FILE INVENTORY", char="-")
         for side, paths_map in [("GCS", file_mapping["GCS"]),
                                  ("UAV", file_mapping["UAV"])]:
             f.write(f"{side} file inventory:\n")

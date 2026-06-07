@@ -1,0 +1,190 @@
+
+======================================================================
+0. FEATURE AND LABEL INVENTORY
+======================================================================
+
+Dataset: NSLKDD (KDDTrain5.csv + KDDTest5.csv)
+Source: https://www.unb.ca/cic/datasets/nsl.html
+Perspective: UAV-Client (single-view, no GCS)
+
+Features (41 columns, all numeric after preprocessing):
+
+  Continuous (32):
+    duration                            Length (seconds) of the connection
+    src_bytes                           Bytes sent from source to destination
+    dst_bytes                           Bytes sent from destination to source
+    wrong_fragment                      Number of wrong fragments
+    urgent                              Number of urgent packets
+    hot                                 Number of 'hot' indicators
+    num_failed_logins                   Number of failed login attempts
+    num_compromised                     Number of 'compromised' conditions
+    num_root                            Number of 'root' accesses
+    num_file_creations                  Number of file creation operations
+    num_shells                          Number of shell prompts
+    num_access_files                    Number of operations on access control files
+    num_outbound_cmds                   Number of outbound commands in FTP session
+    count                               Connections to same host in past 2 seconds
+    srv_count                           Connections to same service in past 2 seconds
+    serror_rate                         % of connections with SYN errors (same host)
+    srv_serror_rate                     % of connections with SYN errors (same service)
+    rerror_rate                         % of connections with REJ errors (same host)
+    srv_rerror_rate                     % of connections with REJ errors (same service)
+    same_srv_rate                       % of connections to same service (same host)
+    diff_srv_rate                       % of connections to different services (same host)
+    srv_diff_host_rate                  % of connections to different hosts (same service)
+    dst_host_count                      Connections to same destination host (100 conns)
+    dst_host_srv_count                  Connections to same service on dest host
+    dst_host_same_srv_rate              % to same service (dest host)
+    dst_host_diff_srv_rate              % to different services (dest host)
+    dst_host_same_src_port_rate         % to same src port (dest host)
+    dst_host_srv_diff_host_rate         % to different hosts (dest service)
+    dst_host_serror_rate                % with SYN errors (dest host)
+    dst_host_srv_serror_rate            % with SYN errors (dest service)
+    dst_host_rerror_rate                % with REJ errors (dest host)
+    dst_host_srv_rerror_rate            % with REJ errors (dest service)
+
+  Binary (6):
+    land                                1 if connection from/to same host/port, else 0
+    logged_in                           1 if successfully logged in, else 0
+    root_shell                          1 if root shell obtained, else 0
+    su_attempted                        1 if 'su root' attempted, else 0
+    is_host_login                       1 if login belongs to 'host' list, else 0
+    is_guest_login                      1 if guest login, else 0
+
+  Categorical, label-encoded (3):
+    protocol_type:  tcp=0, udp=1, icmp=2
+    service:        70 network service categories
+    flag:           11 connection status flags
+
+  Total: 41 numeric feature columns.
+  Note: Categorical features were label-encoded in preprocessing;
+  the deviation analysis (Section 4) treats all columns as numeric,
+  matching the actual input to the federated model.
+
+Labels (5 classes):
+
+  Label  Class    Original attack types
+  ─────  ─────    ───────────────────────────────────────────
+  5      Normal   normal
+  1      DoS      neptune, teardrop, smurf, pod, back, land,
+                  apache2, processtable, mailbomb, worm, udpstorm
+  2      Probe    ipsweep, portsweep, nmap, satan, saint, mscan
+  3      U2R      rootkit, buffer_overflow, loadmodule, perl, ps,
+                  sqlattack, xterm
+  4      R2L      warezclient, guess_passwd, ftp_write, multihop,
+                  imap, warezmaster, phf, spy, snmpgetattack,
+                  httptunnel, snmpguess, named, sendmail, xlock, xsnoop
+
+======================================================================
+1. SAMPLE COUNTS PER ATTACK
+======================================================================
+
+Attack              Train         Test        Total   Fraction
+----------------------------------------------------------
+DoS                45,927        7,460       53,387      35.9%
+Normal             67,343        9,711       77,054      51.9%
+Probe              11,656        2,421       14,077       9.5%
+R2L                   995        2,885        3,880       2.6%
+U2R                    52           67          119       0.1%
+----------------------------------------------------------
+TOTAL             125,973       22,544      148,517     100.0%
+
+Class balance note:
+  NSLKDD is highly imbalanced. Normal dominates, while U2R and
+  R2L have very few samples, making them challenging for FL.
+
+======================================================================
+2. FEATURE COUNTS AND DESCRIPTION
+======================================================================
+
+Columns in CSV:            42
+Numeric feature columns:   41
+Label column:             1 (label, integer 1–5)
+
+Feature type breakdown:
+  Continuous:              32
+  Binary (0/1 flags):     6
+  Categorical (encoded):   3
+  Total features:          41
+
+Feature space description:
+  - Basic connection features (duration, bytes, fragments, urgent)
+  - Content features (login attempts, root access, shells, files)
+  - Time-based traffic features (count, srv_count, error rates)
+    computed over 2-second windows
+  - Host-based traffic features (dst_host_*), computed over
+    100-connection windows to same destination host
+  - All features share a uniform schema across all attack types
+  - Data is Z-score normalized in FL preprocessing
+
+======================================================================
+4. WITHIN-VIEW: DIFFERENT ATTACKS ON NSLKDD
+======================================================================
+
+Method: For each attack type, compute per-feature deviation from
+Normal using range-normalized Cohen's d (each feature normalized
+to [0,1] by Normal's observed range before computing d).
+
+This reveals which attacks cause the largest shift from Normal,
+which features are most attack-sensitive, and which attacks have
+similar deviation patterns.
+
+4a. Attack impact ranking (mean |d| across all features):
+
+   1. DoS          mean|d| = 0.7096
+   2. Probe        mean|d| = 0.5169
+   3. U2R          mean|d| = 0.3794
+   4. R2L          mean|d| = 0.1875
+
+4b. Top-15 features with highest VARIANCE of d across attacks
+    (features whose deviation changes most depending on attack type):
+
+   1. flag                                     std(d)=1.3451
+   2. same_srv_rate                            std(d)=1.3382
+   3. logged_in                                std(d)=1.0125
+   4. serror_rate                              std(d)=0.9361
+   5. dst_host_srv_serror_rate                 std(d)=0.9331
+   6. srv_serror_rate                          std(d)=0.9149
+   7. dst_host_serror_rate                     std(d)=0.9077
+   8. dst_host_same_srv_rate                   std(d)=0.8083
+   9. dst_host_srv_count                       std(d)=0.6349
+  10. root_shell                               std(d)=0.6123
+  11. count                                    std(d)=0.6077
+  12. dst_host_count                           std(d)=0.5560
+  13. dst_host_srv_rerror_rate                 std(d)=0.5301
+  14. dst_host_diff_srv_rate                   std(d)=0.4983
+  15. dst_host_rerror_rate                     std(d)=0.4979
+
+4c. Top-15 features with highest MEAN d across attacks
+    (features universally shifted regardless of attack type):
+
+   1. dst_host_srv_count                       mean(d)=1.8676
+   2. logged_in                                mean(d)=1.1616
+   3. dst_host_same_srv_rate                   mean(d)=1.1506
+   4. flag                                     mean(d)=1.1175
+   5. same_srv_rate                            mean(d)=0.9981
+   6. count                                    mean(d)=0.7971
+   7. service                                  mean(d)=0.7360
+   8. dst_host_same_src_port_rate              mean(d)=0.6602
+   9. dst_host_serror_rate                     mean(d)=0.6552
+  10. dst_host_srv_serror_rate                 mean(d)=0.6508
+  11. srv_serror_rate                          mean(d)=0.6348
+  12. serror_rate                              mean(d)=0.6093
+  13. srv_diff_host_rate                       mean(d)=0.5684
+  14. rerror_rate                              mean(d)=0.4981
+  15. dst_host_diff_srv_rate                   mean(d)=0.4981
+
+4d. Attack similarity matrix (Pearson r of deviation vectors):
+
+                      DoS    Probe      R2L      U2R
+    DoS             1.000    0.490    0.140    0.137
+    Probe           0.490    1.000    0.324    0.312
+    R2L             0.140    0.324    1.000    0.612
+    U2R             0.137    0.312    0.612    1.000
+
+4e. Quick-reference — largest single-feature deviation per attack:
+
+  DoS          flag                                     d=2.976
+  Probe        logged_in                                d=2.121
+  R2L          dst_host_srv_count                       d=0.984
+  U2R          dst_host_srv_count                       d=2.494

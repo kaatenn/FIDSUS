@@ -1,0 +1,220 @@
+
+======================================================================
+0. FEATURE AND LABEL INVENTORY
+======================================================================
+
+Dataset: UNSW-NB15 (unsw_train10.csv + unsw_test10.csv)
+Source: https://research.unsw.edu.au/projects/unsw-nb15-dataset
+Perspective: UAV-Client (single-view, no GCS)
+
+Features (39 numeric, 3 categorical, 1 id column):
+
+  Numeric features (39):
+    dur                       Record total duration
+    spkts                     Source-to-destination packet count
+    dpkts                     Destination-to-source packet count
+    sbytes                    Source-to-destination transaction bytes
+    dbytes                    Destination-to-source transaction bytes
+    rate                      Total packets per second
+    sttl                      Source-to-destination time-to-live value
+    dttl                      Destination-to-source time-to-live value
+    sload                     Source bits per second
+    dload                     Destination bits per second
+    sloss                     Source packets retransmitted or dropped
+    dloss                     Destination packets retransmitted or dropped
+    sinpkt                    Source inter-packet arrival time (ms)
+    dinpkt                    Destination inter-packet arrival time (ms)
+    sjit                      Source jitter (ms)
+    djit                      Destination jitter (ms)
+    swin                      Source TCP window advertisement value
+    stcpb                     Source TCP base sequence number
+    dtcpb                     Destination TCP base sequence number
+    dwin                      Destination TCP window advertisement value
+    tcprtt                    TCP connection setup RTT
+    synack                    TCP connection setup time (SYN→SYN_ACK)
+    ackdat                    TCP connection setup time (SYN_ACK→ACK)
+    smean                     Mean packet size transmitted by source
+    dmean                     Mean packet size transmitted by destination
+    trans_depth               Pipelined depth into HTTP connection
+    response_body_len         Actual uncompressed HTTP response body size
+    ct_srv_src                No. of connections of same service from same source (100 conns)
+    ct_state_ttl              No. of connections per state_ttl range
+    ct_dst_ltm                No. of connections to same dest address (100 conns)
+    ct_src_dport_ltm          No. of connections from same src→dest port (100 conns)
+    ct_dst_sport_ltm          No. of connections to same dest→src port (100 conns)
+    ct_dst_src_ltm            No. of connections from same src→dest pair (100 conns)
+    is_ftp_login              1 if FTP session logged in, else 0
+    ct_ftp_cmd                No. of FTP commands in session
+    ct_flw_http_mthd          No. of HTTP methods in session
+    ct_src_ltm                No. of connections from same source (100 conns)
+    ct_srv_dst                No. of connections of same service to same dest (100 conns)
+    is_sm_ips_ports           1 if src=dest IP and src=dest port, else 0
+
+  Categorical features (3, excluded from numeric analysis):
+    proto:     Transport protocol (label-encoded: 0=TCP, etc.)
+    service:   Network service type (label-encoded: 70=dns, etc.)
+    state:     Connection state (label-encoded)
+
+  Meta/ID columns (2, excluded from analysis):
+    id:         Row identifier
+    attack_cat: Original attack category string (used for label mapping)
+
+  Total: 39 numeric features analyzed, 3 categorical excluded.
+  Note: Categorical features were label-encoded in preprocessing;
+  the deviation analysis (Section 4) uses only the 39 numeric features,
+  matching the input to the federated model (id & attack_cat excluded).
+
+Labels (10 classes):
+
+  Label  Class             attack_cat value
+  ─────  ────────────────  ──────────────
+  1      Normal            Normal
+  2      Backdoor          Backdoor
+  3      Analysis          Analysis
+  4      Fuzzers           Fuzzers
+  5      Shellcode         Shellcode
+  6      Reconnaissance    Reconnaissance
+  7      Exploits          Exploits
+  8      DoS               DoS
+  9      Worms             Worms
+  10     Generic           Generic
+
+======================================================================
+1. SAMPLE COUNTS PER ATTACK
+======================================================================
+
+Attack                  Train         Test        Total   Fraction
+--------------------------------------------------------------
+Analysis                2,000          677        2,677       1.0%
+Backdoor                1,746          583        2,329       0.9%
+DoS                    12,264        4,089       16,353       6.3%
+Exploits               33,393       11,132       44,525      17.3%
+Fuzzers                18,184        6,062       24,246       9.4%
+Generic                40,000       18,871       58,871      22.8%
+Normal                 55,984       37,000       92,984      36.1%
+Reconnaissance         10,491        3,496       13,987       5.4%
+Shellcode               1,133          378        1,511       0.6%
+Worms                     130           44          174       0.1%
+--------------------------------------------------------------
+TOTAL                 175,325       82,332      257,657     100.0%
+
+Class balance note:
+  UNSW-NB15 has moderate class imbalance. Normal is the largest
+  class; Analysis, Backdoor, and Worms have relatively few samples.
+  The 50-client Dirichlet partition introduces additional skew
+  for federated learning experiments.
+
+======================================================================
+2. FEATURE COUNTS AND DESCRIPTION
+======================================================================
+
+Columns in CSV:                45
+Numeric feature columns:       39 (continuous + counters)
+Categorical columns:            3 (proto, service, state)
+Meta/ID columns:                2 (id, attack_cat)
+Label column:                   1 (label, integer 1–10)
+Total columns:                  45
+
+Feature type breakdown:
+  Flow-level statistics:       9 (dur, rate, sttl, dttl, sload, dload, sloss, dloss, tcprtt)
+  Packet/byte counters:         7 (spkts, dpkts, sbytes, dbytes, sinpkt, dinpkt, smean, dmean)
+  Jitter/window/seq:           7 (sjit, djit, swin, stcpb, dtcpb, dwin, synack, ackdat)
+  HTTP features:                2 (trans_depth, response_body_len)
+  Connection-time features:    12 (ct_*: various 100-connection counters)
+  Binary flags:                 2 (is_ftp_login, is_sm_ips_ports)
+
+Feature space description:
+  - Flow-based statistics similar to NSLKDD but with more detail
+  - Includes jitter, TCP window, and HTTP response metrics
+  - Time-based connection counters over 100-connection windows
+  - All 39 numeric features share a uniform schema across attacks
+  - Data is Z-score normalized in FL preprocessing
+  - Categorical features (proto, service, state) are label-encoded
+    but excluded from the federated model input
+
+======================================================================
+4. WITHIN-VIEW: DIFFERENT ATTACKS ON UNSW-NB15
+======================================================================
+
+Method: For each attack type, compute per-feature deviation from
+Normal using range-normalized Cohen's d (each feature normalized
+to [0,1] by Normal's observed range before computing d).
+
+This reveals which attacks cause the largest shift from Normal,
+which features are most attack-sensitive, and which attacks have
+similar deviation patterns.
+
+4a. Attack impact ranking (mean |d| across all features):
+
+   1. Generic          mean|d| = 0.9434
+   2. Backdoor         mean|d| = 0.4969
+   3. Worms            mean|d| = 0.4869
+   4. Shellcode        mean|d| = 0.4381
+   5. Analysis         mean|d| = 0.4292
+   6. Reconnaissance   mean|d| = 0.3869
+   7. DoS              mean|d| = 0.3672
+   8. Fuzzers          mean|d| = 0.3112
+   9. Exploits         mean|d| = 0.2450
+
+4b. Top-15 features with highest VARIANCE of d across attacks
+    (features whose deviation changes most depending on attack type):
+
+   1. ct_dst_sport_ltm               std(d)=0.8148
+   2. ct_srv_dst                     std(d)=0.6882
+   3. ct_srv_src                     std(d)=0.6664
+   4. swin                           std(d)=0.6645
+   5. ct_dst_src_ltm                 std(d)=0.6457
+   6. dwin                           std(d)=0.6326
+   7. ct_src_dport_ltm               std(d)=0.6070
+   8. trans_depth                    std(d)=0.5193
+   9. ct_src_ltm                     std(d)=0.5178
+  10. sttl                           std(d)=0.5174
+  11. ct_dst_ltm                     std(d)=0.5106
+  12. dtcpb                          std(d)=0.4640
+  13. stcpb                          std(d)=0.4497
+  14. dttl                           std(d)=0.4194
+  15. rate                           std(d)=0.3873
+
+4c. Top-15 features with highest MEAN d across attacks
+    (features universally shifted regardless of attack type):
+
+   1. sttl                           mean(d)=1.8499
+   2. ct_state_ttl                   mean(d)=0.9676
+   3. swin                           mean(d)=0.8500
+   4. dwin                           mean(d)=0.7872
+   5. dmean                          mean(d)=0.6939
+   6. rate                           mean(d)=0.6845
+   7. ct_srv_dst                     mean(d)=0.6650
+   8. dload                          mean(d)=0.6639
+   9. dttl                           mean(d)=0.6349
+  10. ct_srv_src                     mean(d)=0.6346
+  11. ct_dst_sport_ltm               mean(d)=0.6245
+  12. stcpb                          mean(d)=0.5753
+  13. ct_dst_ltm                     mean(d)=0.5676
+  14. dtcpb                          mean(d)=0.5573
+  15. ct_dst_src_ltm                 mean(d)=0.5263
+
+4d. Attack similarity matrix (Pearson r of deviation vectors):
+
+                     Analysis Backdoor      DoS Exploits  Fuzzers  Generic Reconnai Shellcod    Worms
+    Analysis            1.000    0.945    0.837    0.259    0.463    0.479    0.575    0.553    0.072
+    Backdoor            0.945    1.000    0.913    0.319    0.602    0.474    0.639    0.597    0.206
+    DoS                 0.837    0.913    1.000    0.498    0.557    0.566    0.615    0.572    0.202
+    Exploits            0.259    0.319    0.498    1.000    0.565    0.481    0.651    0.632    0.590
+    Fuzzers             0.463    0.602    0.557    0.565    1.000    0.166    0.770    0.747    0.519
+    Generic             0.479    0.474    0.566    0.481    0.166    1.000    0.471    0.489    0.293
+    Reconnaissance      0.575    0.639    0.615    0.651    0.770    0.471    1.000    0.960    0.480
+    Shellcode           0.553    0.597    0.572    0.632    0.747    0.489    0.960    1.000    0.573
+    Worms               0.072    0.206    0.202    0.590    0.519    0.293    0.480    0.573    1.000
+
+4e. Quick-reference — largest single-feature deviation per attack:
+
+  Analysis         sttl                           d=1.264
+  Backdoor         sttl                           d=2.029
+  DoS              sttl                           d=1.620
+  Exploits         sttl                           d=0.790
+  Fuzzers          sttl                           d=2.219
+  Generic          ct_dst_sport_ltm               d=2.642
+  Reconnaissance   sttl                           d=2.204
+  Shellcode        sttl                           d=2.241
+  Worms            sttl                           d=2.095
