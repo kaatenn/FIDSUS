@@ -16,6 +16,12 @@ from flcore.servers.servergh import FedGH
 from flcore.servers.serveravgDBE import FedAvgDBE
 from flcore.servers.FIDSUS import FIDSUS
 from flcore.trainmodel.models import *
+
+# Import audited FIDSUS for Top-k audit
+try:
+    from audit.audited_server import AuditedFIDSUS
+except ImportError:
+    AuditedFIDSUS = None
 from utils.result_utils import average_data
 from utils.config_loader import load_config
 
@@ -93,6 +99,17 @@ def run(args):
             args.model.fc = nn.Identity()
             args.model = BaseHeadSplit(args.model, args.head)
             server = FIDSUS(args, i)
+
+        elif args.algorithm == "AuditedFIDSUS":
+            if AuditedFIDSUS is None:
+                raise ImportError(
+                    "Cannot import AuditedFIDSUS. "
+                    "Make sure system/audit/ is on the Python path."
+                )
+            args.head = copy.deepcopy(args.model.fc)
+            args.model.fc = nn.Identity()
+            args.model = BaseHeadSplit(args.model, args.head)
+            server = AuditedFIDSUS(args, i)
 
         else:
             raise NotImplementedError
