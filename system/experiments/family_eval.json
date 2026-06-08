@@ -1,0 +1,87 @@
+{
+  "defaults": {
+    "ignore": false,
+    "device": "cuda",
+    "device_id": "0",
+    "num_clients": 50,
+    "join_ratio": 1.0,
+    "client_activity_rate": 1.0,
+    "M": 5,
+    "model": "1dcnn",
+    "batch_size": 64,
+    "local_learning_rate": 0.01,
+    "server_learning_rate": 0.01,
+    "learning_rate_decay": false,
+    "learning_rate_decay_gamma": 0.1,
+    "global_rounds": 100,
+    "local_epochs": 1,
+    "random_join_ratio": false,
+    "prev": 0,
+    "times": 3,
+    "eval_gap": 1,
+    "save_folder_name": "items",
+    "batch_num_per_client": 2,
+    "time_threthold": 10000,
+    "beta": 0.0,
+    "lamda": 0.99,
+    "mu": 0.01,
+    "p_learning_rate": 0.01,
+    "tau": 1.0,
+    "momentum": 0.1,
+    "kl_weight": 0.0,
+    "goal": "family_eval"
+  },
+  "experiments": [
+    {
+      "comment": "━━━━━━━━━━ NSL-KDD (5 classes → 4 families) ━━━━━━━━━━",
+      "name": "FIDSUS on NSLKDD",
+      "algorithm": "FIDSUS",
+      "dataset": "NSLKDD",
+      "num_classes": 5
+    },
+    {
+      "name": "FedAvg on NSLKDD",
+      "algorithm": "FedAvg",
+      "dataset": "NSLKDD",
+      "num_classes": 5
+    },
+    {
+      "name": "FedProx on NSLKDD",
+      "algorithm": "FedProx",
+      "dataset": "NSLKDD",
+      "num_classes": 5
+    },
+    {
+      "name": "FedProto on NSLKDD",
+      "algorithm": "FedProto",
+      "dataset": "NSLKDD",
+      "num_classes": 5
+    },
+
+    {
+      "comment": "━━━━━━━━━━ UNSW-NB15 (10 classes → 8 families) ━━━━━━━━━━",
+      "name": "FIDSUS on UNSW",
+      "algorithm": "FIDSUS",
+      "dataset": "UNSW",
+      "num_classes": 10
+    },
+    {
+      "name": "FedAvg on UNSW",
+      "algorithm": "FedAvg",
+      "dataset": "UNSW",
+      "num_classes": 10
+    },
+    {
+      "name": "FedProx on UNSW",
+      "algorithm": "FedProx",
+      "dataset": "UNSW",
+      "num_classes": 10
+    },
+    {
+      "name": "FedProto on UNSW",
+      "algorithm": "FedProto",
+      "dataset": "UNSW",
+      "num_classes": 10
+    }
+  ]
+}
