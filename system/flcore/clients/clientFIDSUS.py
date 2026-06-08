@@ -99,20 +99,30 @@ class clientFIDSUS(Client):
     def weight_cal(self, val_loader):
         weight_list = []
         L = self.recalculate_loss(self.old_model, val_loader)
-        for received_model in self.received_models:
+        self._diag_L_old = L  # for diagnosis logging
+        self._diag_param_norms = {}
+        for j, received_model in enumerate(self.received_models):
             params_dif = []
             for param_n, param_i in zip(received_model.parameters(), self.old_model.parameters()):
                 params_dif.append((param_n - param_i).view(-1))
             params_dif = torch.cat(params_dif)
+            param_norm = torch.norm(params_dif).item()
+            nid = self.received_ids[j]
+            self._diag_param_norms[nid] = param_norm
+            L_recv = self.recalculate_loss(received_model, val_loader)
             weight_list.append(
-                (L - self.recalculate_loss(received_model, val_loader)) / (torch.norm(params_dif) + 1e-5))
+                (L - L_recv) / (torch.norm(params_dif) + 1e-5))
+        self._diag_L_received = {nid: self.recalculate_loss(m, val_loader)
+                                  for m, nid in zip(self.received_models, self.received_ids)}
+        self._diag_was_clipped = any(w < 0 for w in weight_list)
+        self._diag_raw_weights = list(weight_list)
         self.weight_vector_update(weight_list)
         return torch.tensor(weight_list)
 
     def weight_vector_update(self, weight_list):
         self.weight_vector = np.zeros(self.num_clients)
         for w, id in zip(weight_list, self.received_ids):
-            self.weight_vector[id] += w.item()
+            self.weight_vector[id] += w.item() if isinstance(w, torch.Tensor) else w
         self.weight_vector = torch.tensor(self.weight_vector).to(self.device)
     def recalculate_loss(self, new_model, val_loader):
         L = 0
@@ -133,7 +143,11 @@ class clientFIDSUS(Client):
 
     def aggregate_parameters(self, val_loader):
         weights = self.weight_scale(self.weight_cal(val_loader))
+        # Store normalized weights for diagnosis
+        self._diag_normalized_weights = {}
         if len(weights) > 0:
+            for j, (w, nid) in enumerate(zip(weights.tolist(), self.received_ids)):
+                self._diag_normalized_weights[nid] = w
             for param in self.model.parameters():
                 param.data.zero_()
 

@@ -6,6 +6,7 @@ import time
 import warnings
 import numpy as np
 import logging
+from pathlib import Path
 
 from flcore.servers.serveravg import FedAvg
 from flcore.servers.serverprox import FedProx
@@ -96,6 +97,20 @@ def run(args):
 
         else:
             raise NotImplementedError
+
+        # Setup diagnosis logging (if enabled)
+        if getattr(args, 'enable_affinity_diagnosis', False):
+            from utils.diagnosis_logger import DiagnosisLogger
+            server.diagnosis_logger = DiagnosisLogger(
+                args, args.num_clients, args.num_classes, dataset=args.dataset, seed=i)
+            if getattr(args, 'enable_family_eval', False):
+                from utils.family_utils import load_family_mapping
+                server.family_mapping = load_family_mapping(
+                    str(Path(__file__).resolve().parent.parent / "configs" / "attack_family_mapping.yaml"))
+            else:
+                server.family_mapping = None
+            server.diagnosis_logger.compute_client_label_profiles(
+                args.dataset, i, args.num_clients, family_mapping=server.family_mapping)
 
         server.train()
 

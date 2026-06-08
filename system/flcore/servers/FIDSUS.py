@@ -30,6 +30,7 @@ class FIDSUS(Server):
     def train(self):
         for i in range(self.global_rounds + 1):
             s_t = time.time()
+            self.current_round = i
             self.selected_clients = self.select_clients()
             self.send_models()
             if i%self.eval_gap == 0:
@@ -41,6 +42,8 @@ class FIDSUS(Server):
             self.receive_models()
             self.aggregate_parameters()
             self.train_head()
+            if getattr(self.args, 'enable_affinity_diagnosis', False) and hasattr(self, 'diagnosis_logger'):
+                self.diagnosis_logger.flush()
             self.Budget.append(time.time() - s_t)
             print('-' * 25, 'time cost', '-' * 25, self.Budget[-1])
 
@@ -65,6 +68,22 @@ class FIDSUS(Server):
 
             client.receive_models(send_ids, send_models)
             client.set_parameters(self.head)
+
+            # Diagnosis: log top-n selection
+            if getattr(self.args, 'enable_affinity_diagnosis', False) and hasattr(self, 'diagnosis_logger'):
+                scores = self.P[client.id][indices].detach().cpu().tolist()
+                self.diagnosis_logger.log_topn_selection(
+                    round_num=self.current_round,
+                    client_id=client.id,
+                    neighbor_ids=indices,
+                    affinity_scores=scores,
+                    is_active=(client in self.selected_clients),
+                    num_selected=len(self.selected_clients),
+                    num_total=self.num_clients,
+                    topn_size=len(indices))
+                # Pass diagnosis_logger reference to client
+                client.diagnosis_logger = self.diagnosis_logger
+
             client.send_time_cost['num_rounds'] += 1
             client.send_time_cost['total_cost'] += 2 * (time.time() - start_time)
 
@@ -79,6 +98,7 @@ class FIDSUS(Server):
         self.uploaded_protos = []
         self.uploaded_models = []
         tot_samples = 0
+        enable_diag = getattr(self.args, 'enable_affinity_diagnosis', False) and hasattr(self, 'diagnosis_logger')
         for client in active_clients:
             try:
                 client_time_cost = client.train_time_cost['total_cost'] / client.train_time_cost['num_rounds'] + \
@@ -94,7 +114,29 @@ class FIDSUS(Server):
                 self.uploaded_weights.append(client.train_samples)
                 self.uploaded_models.append(client.model)
                 self.client_models[client.id] = copy.deepcopy(client.model)
+                # Save old affinity before update
+                if enable_diag:
+                    old_P_row = self.P[client.id].detach().cpu().clone()
                 self.P[client.id] += client.weight_vector
+                # Log affinity update for each neighbor
+                if enable_diag:
+                    wv = client.weight_vector.detach().cpu()
+                    for nid in range(self.num_clients):
+                        delta = wv[nid].item()
+                        if abs(delta) > 1e-12:
+                            self.diagnosis_logger.log_affinity_update(
+                                round_num=self.current_round,
+                                client_id=client.id,
+                                neighbor_id=nid,
+                                old_affinity=old_P_row[nid].item(),
+                                weight_delta=delta,
+                                new_affinity=self.P[client.id][nid].item(),
+                                L_old=getattr(client, '_diag_L_old', 0.0),
+                                L_received=getattr(client, '_diag_L_received', 0.0),
+                                param_distance=getattr(client, '_diag_param_norms', {}).get(nid, 0.0),
+                                computed_weight=delta,
+                                was_clipped=getattr(client, '_diag_was_clipped', False),
+                                normalized_weight=getattr(client, '_diag_normalized_weights', {}).get(nid, None))
         for i, w in enumerate(self.uploaded_weights):
             self.uploaded_weights[i] = w / tot_samples
 
@@ -149,4 +191,48 @@ class FIDSUS(Server):
         print("Averaged Test AUC: {:.4f}".format(test_auc))
         print("Std Test Accurancy: {:.4f}".format(np.std(accs)))
         print("Std Test AUC: {:.4f}".format(np.std(aucs)))
+
+        # Diagnosis: log per-sample predictions for fine-grained eval
+        if getattr(self.args, 'enable_affinity_diagnosis', False) and \
+           getattr(self.args, 'enable_family_eval', False) and \
+           hasattr(self, 'diagnosis_logger'):
+            self._log_client_predictions()
+
+    def _log_client_predictions(self):
+        """Log per-sample predictions for all clients (diagnosis only)."""
+        import torch.nn.functional as F
+
+        family_mapping = getattr(self, 'family_mapping', None)
+        label_names = {}
+        if family_mapping and self.dataset in family_mapping:
+            label_names = family_mapping[self.dataset].get('label_names', {})
+
+        for client in self.clients:
+            testloader = client.load_test_data()
+            client.model_per.eval()
+            with torch.no_grad():
+                for x, y in testloader:
+                    if type(x) == type([]):
+                        x[0] = x[0].to(self.device)
+                    else:
+                        x = x.to(self.device)
+                    y = y.to(self.device)
+                    output = client.model_per(x)
+                    preds = torch.argmax(output, dim=1)
+                    probs = F.softmax(output, dim=1)
+                    confs = torch.max(probs, dim=1).values
+
+                    for j in range(len(y)):
+                        y_true_id = int(y[j].item())
+                        y_pred_id = int(preds[j].item())
+                        y_true_name = label_names.get(y_true_id, str(y_true_id))
+                        y_pred_name = label_names.get(y_pred_id, str(y_pred_id))
+                        self.diagnosis_logger.log_prediction(
+                            round_num=self.current_round,
+                            client_id=client.id,
+                            y_true=y_true_id,
+                            y_pred=y_pred_id,
+                            y_true_name=y_true_name,
+                            y_pred_name=y_pred_name,
+                            confidence=confs[j].item())
 

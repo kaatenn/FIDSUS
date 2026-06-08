@@ -1,14 +1,12 @@
 {
   "defaults": {
     "ignore": false,
-    "device": "cuda",
+    "device": "cpu",
     "device_id": "0",
-    "dataset": "UNSW",
     "num_clients": 50,
     "join_ratio": 1.0,
     "client_activity_rate": 1.0,
     "M": 5,
-    "num_classes": 10,
     "model": "1dcnn",
     "batch_size": 64,
     "local_learning_rate": 0.01,
@@ -32,17 +30,24 @@
     "tau": 1.0,
     "momentum": 0.1,
     "kl_weight": 0.0,
-    "goal": "test",
-    "enable_affinity_diagnosis": false,
-    "enable_family_eval": false,
+    "goal": "diagnosis",
+    "enable_affinity_diagnosis": true,
+    "enable_family_eval": true,
     "diagnosis_output_dir": "audit/fidsus_real_training_diagnosis"
   },
   "experiments": [
     {
-      "name": "FIDSUS on UNSW (default)",
+      "name": "FIDSUS diagnosis on NSL-KDD",
+      "algorithm": "FIDSUS",
+      "dataset": "NSLKDD",
+      "num_classes": 5,
+      "global_rounds": 100
+    },
+    {
+      "name": "FIDSUS diagnosis on UNSW",
       "algorithm": "FIDSUS",
       "dataset": "UNSW",
-      "times": 1,
+      "num_classes": 10,
       "global_rounds": 100
     }
   ]

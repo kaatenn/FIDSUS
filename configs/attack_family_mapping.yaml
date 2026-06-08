@@ -1,0 +1,99 @@
+# Attack Family Mapping Configuration
+# Maps fine-grained labels (from dataset loaders) to coarse attack families
+# Used ONLY for evaluation/diagnosis, NOT for training.
+#
+# Format per dataset:
+#   <dataset>:
+#     mapping:
+#       <label_index>: <family_label>
+#     families:
+#       - <family_label_1>
+#       - <family_label_2>
+
+NSLKDD:
+  mapping:
+    0: "Normal"
+    1: "DoS"
+    2: "Probe"
+    3: "Privilege/Access"
+    4: "Privilege/Access"
+  families:
+    - "Normal"
+    - "DoS"
+    - "Probe"
+    - "Privilege/Access"
+  label_names:
+    0: "Normal"
+    1: "DoS"
+    2: "Probe"
+    3: "U2R"
+    4: "R2L"
+
+UNSW:
+  mapping:
+    0: "Normal"
+    1: "Backdoor/Analysis"
+    2: "Backdoor/Analysis"
+    3: "Fuzzing"
+    4: "Shellcode/Worms"
+    5: "Reconnaissance"
+    6: "Exploits"
+    7: "DoS"
+    8: "Shellcode/Worms"
+    9: "Generic"
+  families:
+    - "Normal"
+    - "Backdoor/Analysis"
+    - "Fuzzing"
+    - "Shellcode/Worms"
+    - "Reconnaissance"
+    - "Exploits"
+    - "DoS"
+    - "Generic"
+  label_names:
+    0: "Normal"
+    1: "Backdoor"
+    2: "Analysis"
+    3: "Fuzzers"
+    4: "Shellcode"
+    5: "Reconnaissance"
+    6: "Exploits"
+    7: "DoS"
+    8: "Worms"
+    9: "Generic"
+
+UAV:
+  mapping:
+    0: "Normal"
+    1: "Flooding/Availability"
+    2: "Flooding/Availability"
+    3: "Recon/Scanning"
+    4: "Recon/Scanning"
+    5: "Link/Control Manipulation"
+    6: "Link/Control Manipulation"
+    7: "Link/Control Manipulation"
+    8: "Link/Control Manipulation"
+    9: "Authentication"
+    10: "GPS/Signal Interference"
+    11: "Replay"
+  families:
+    - "Normal"
+    - "Flooding/Availability"
+    - "Recon/Scanning"
+    - "Link/Control Manipulation"
+    - "Authentication"
+    - "GPS/Signal Interference"
+    - "Replay"
+  label_names:
+    0: "Normal"
+    1: "DoS"
+    2: "DDoS"
+    3: "Scanning"
+    4: "Reconnaissance"
+    5: "MITM"
+    6: "Evil Twin"
+    7: "De-authentication"
+    8: "Fake Landing"
+    9: "Brute Force"
+    10: "GPS Jamming"
+    11: "Replay"
