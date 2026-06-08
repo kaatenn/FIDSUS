@@ -227,6 +227,30 @@ class Server(object):
         print("Average Test AUC: {:.4f}".format(test_auc))
         print("Average Train Loss: {:.4f}".format(train_loss))
 
+    def save_predictions(self, output_dir=None):
+        """Collect predictions from all clients and save for family-level eval."""
+        if output_dir is None:
+            output_dir = os.path.join(
+                "results", "predictions", self.dataset,
+                self.algorithm, self.goal, f"run_{self.times}"
+            )
+        os.makedirs(output_dir, exist_ok=True)
+
+        y_true_all = []
+        y_pred_all = []
+        for c in self.clients:
+            yt, yp = c.collect_predictions()
+            y_true_all.append(yt)
+            y_pred_all.append(yp)
+
+        y_true = np.concatenate(y_true_all, axis=0)
+        y_pred = np.concatenate(y_pred_all, axis=0)
+
+        np.save(os.path.join(output_dir, "y_true.npy"), y_true)
+        np.save(os.path.join(output_dir, "y_pred.npy"), y_pred)
+        print(f"Saved predictions: y_true={y_true.shape}, y_pred={y_pred.shape} → {output_dir}")
+        return y_true, y_pred
+
     def check_done(self, acc_lss, top_cnt=None, div_value=None):
         for acc_ls in acc_lss:
             if top_cnt != None and div_value != None:

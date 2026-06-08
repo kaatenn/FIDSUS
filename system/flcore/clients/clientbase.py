@@ -112,6 +112,31 @@ class Client(object):
 
         return test_acc, test_num, auc
 
+    def collect_predictions(self):
+        """Return (y_true_ids, y_pred_ids) for family-level evaluation.
+
+        Unlike test_metrics(), this returns raw integer label ids so that
+        label→family remapping can be applied later without ambiguity.
+        """
+        testloaderfull = self.load_test_data()
+        self.model.eval()
+        y_true_all = []
+        y_pred_all = []
+        with torch.no_grad():
+            for x, y in testloaderfull:
+                if type(x) == type([]):
+                    x[0] = x[0].to(self.device)
+                else:
+                    x = x.to(self.device)
+                y = y.to(self.device)
+                output = self.model(x)
+                preds = torch.argmax(output, dim=1)
+                y_true_all.append(y.detach().cpu().numpy())
+                y_pred_all.append(preds.detach().cpu().numpy())
+        y_true_ids = np.concatenate(y_true_all, axis=0)
+        y_pred_ids = np.concatenate(y_pred_all, axis=0)
+        return y_true_ids, y_pred_ids
+
     def train_metrics(self):
         trainloader = self.load_train_data()
         self.model.eval()

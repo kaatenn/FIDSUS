@@ -99,6 +99,15 @@ def run(args):
 
         server.train()
 
+        # Save predictions for family-level evaluation (non-invasive)
+        try:
+            if hasattr(server, 'save_predictions_personalized'):
+                server.save_predictions_personalized()
+            else:
+                server.save_predictions()
+        except Exception as e:
+            print(f"[WARN] Could not save predictions for family eval: {e}")
+
         time_list.append(time.time()-start)
 
     print(f"\nAverage time cost: {round(np.average(time_list), 2)}s.")

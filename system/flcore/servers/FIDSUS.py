@@ -150,3 +150,24 @@ class FIDSUS(Server):
         print("Std Test Accurancy: {:.4f}".format(np.std(accs)))
         print("Std Test AUC: {:.4f}".format(np.std(aucs)))
 
+    def save_predictions_personalized(self, output_dir=None):
+        """Collect personalized predictions for family-level eval."""
+        if output_dir is None:
+            output_dir = os.path.join(
+                "results", "predictions", self.dataset,
+                self.algorithm, self.goal, f"run_{self.times}"
+            )
+        os.makedirs(output_dir, exist_ok=True)
+        y_true_all = []
+        y_pred_all = []
+        for c in self.clients:
+            yt, yp = c.collect_predictions_personalized()
+            y_true_all.append(yt)
+            y_pred_all.append(yp)
+        y_true = np.concatenate(y_true_all, axis=0)
+        y_pred = np.concatenate(y_pred_all, axis=0)
+        np.save(os.path.join(output_dir, "y_true.npy"), y_true)
+        np.save(os.path.join(output_dir, "y_pred.npy"), y_pred)
+        print(f"Saved personalized predictions: y_true={y_true.shape}, y_pred={y_pred.shape} → {output_dir}")
+        return y_true, y_pred
+

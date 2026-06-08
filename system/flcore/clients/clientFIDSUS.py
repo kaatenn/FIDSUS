@@ -206,6 +206,27 @@ class clientFIDSUS(Client):
         auc = metrics.roc_auc_score(y_true, y_prob, average='micro')
         return test_acc, test_num, auc
 
+    def collect_predictions_personalized(self):
+        """Return (y_true_ids, y_pred_ids) from the personalized model."""
+        testloaderfull = self.load_test_data()
+        self.model_per.eval()
+        y_true_all = []
+        y_pred_all = []
+        with torch.no_grad():
+            for x, y in testloaderfull:
+                if type(x) == type([]):
+                    x[0] = x[0].to(self.device)
+                else:
+                    x = x.to(self.device)
+                y = y.to(self.device)
+                output = self.model_per(x)
+                preds = torch.argmax(output, dim=1)
+                y_true_all.append(y.detach().cpu().numpy())
+                y_pred_all.append(preds.detach().cpu().numpy())
+        y_true_ids = np.concatenate(y_true_all, axis=0)
+        y_pred_ids = np.concatenate(y_pred_all, axis=0)
+        return y_true_ids, y_pred_ids
+
 
 def MMD(x, y, kernel, device='cpu'):
     xx = torch.mm(x.unsqueeze(1), x.unsqueeze(0))
