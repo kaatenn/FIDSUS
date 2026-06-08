@@ -1,0 +1,122 @@
+[
+  {
+    "family": "Normal",
+    "true_class": "Normal",
+    "pred_class": "Worms",
+    "count": 698
+  },
+  {
+    "family": "Normal",
+    "true_class": "Normal",
+    "pred_class": "Fuzzers",
+    "count": 676
+  },
+  {
+    "family": "Normal",
+    "true_class": "Normal",
+    "pred_class": "Analysis",
+    "count": 669
+  },
+  {
+    "family": "Normal",
+    "true_class": "Normal",
+    "pred_class": "Exploits",
+    "count": 665
+  },
+  {
+    "family": "Normal",
+    "true_class": "Normal",
+    "pred_class": "Backdoor",
+    "count": 662
+  },
+  {
+    "family": "Normal",
+    "true_class": "Normal",
+    "pred_class": "Generic",
+    "count": 656
+  },
+  {
+    "family": "Normal",
+    "true_class": "Normal",
+    "pred_class": "Shellcode",
+    "count": 644
+  },
+  {
+    "family": "Normal",
+    "true_class": "Normal",
+    "pred_class": "DoS",
+    "count": 637
+  },
+  {
+    "family": "Normal",
+    "true_class": "Normal",
+    "pred_class": "Reconnaissance",
+    "count": 633
+  },
+  {
+    "family": "Generic",
+    "true_class": "Generic",
+    "pred_class": "Fuzzers",
+    "count": 445
+  },
+  {
+    "family": "Generic",
+    "true_class": "Generic",
+    "pred_class": "DoS",
+    "count": 443
+  },
+  {
+    "family": "Generic",
+    "true_class": "Generic",
+    "pred_class": "Shellcode",
+    "count": 437
+  },
+  {
+    "family": "Generic",
+    "true_class": "Generic",
+    "pred_class": "Normal",
+    "count": 434
+  },
+  {
+    "family": "Generic",
+    "true_class": "Generic",
+    "pred_class": "Reconnaissance",
+    "count": 420
+  },
+  {
+    "family": "Generic",
+    "true_class": "Generic",
+    "pred_class": "Exploits",
+    "count": 405
+  },
+  {
+    "family": "Generic",
+    "true_class": "Generic",
+    "pred_class": "Worms",
+    "count": 401
+  },
+  {
+    "family": "Generic",
+    "true_class": "Generic",
+    "pred_class": "Backdoor",
+    "count": 400
+  },
+  {
+    "family": "Generic",
+    "true_class": "Generic",
+    "pred_class": "Analysis",
+    "count": 397
+  },
+  {
+    "family": "Exploits",
+    "true_class": "Exploits",
+    "pred_class": "Normal",
+    "count": 361
+  },
+  {
+    "family": "Exploits",
+    "true_class": "Exploits",
+    "pred_class": "Shellcode",
+    "count": 341
+  }
+]

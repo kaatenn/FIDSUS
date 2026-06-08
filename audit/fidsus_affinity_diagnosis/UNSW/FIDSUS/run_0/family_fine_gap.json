@@ -1,0 +1,8 @@
+{
+  "family_level_accuracy": 0.7540493879847142,
+  "fine_grained_accuracy": 0.7466198521852146,
+  "family_fine_accuracy_gap": 0.007429535799499565,
+  "family_level_macro_f1": 0.6400880838719871,
+  "fine_grained_macro_f1": 0.5308393187411165,
+  "family_fine_macro_f1_gap": 0.10924876513087067
+}

@@ -1,0 +1,122 @@
+[
+  {
+    "true": "DoS",
+    "predicted": "DoS",
+    "count": 8045
+  },
+  {
+    "true": "DoS",
+    "predicted": "Normal",
+    "count": 348
+  },
+  {
+    "true": "DoS",
+    "predicted": "Probe",
+    "count": 1171
+  },
+  {
+    "true": "DoS",
+    "predicted": "R2L",
+    "count": 606
+  },
+  {
+    "true": "DoS",
+    "predicted": "U2R",
+    "count": 548
+  },
+  {
+    "true": "Normal",
+    "predicted": "DoS",
+    "count": 914
+  },
+  {
+    "true": "Normal",
+    "predicted": "Normal",
+    "count": 11588
+  },
+  {
+    "true": "Normal",
+    "predicted": "Probe",
+    "count": 956
+  },
+  {
+    "true": "Normal",
+    "predicted": "R2L",
+    "count": 1002
+  },
+  {
+    "true": "Normal",
+    "predicted": "U2R",
+    "count": 983
+  },
+  {
+    "true": "Probe",
+    "predicted": "DoS",
+    "count": 231
+  },
+  {
+    "true": "Probe",
+    "predicted": "Normal",
+    "count": 73
+  },
+  {
+    "true": "Probe",
+    "predicted": "Probe",
+    "count": 2082
+  },
+  {
+    "true": "Probe",
+    "predicted": "R2L",
+    "count": 200
+  },
+  {
+    "true": "Probe",
+    "predicted": "U2R",
+    "count": 206
+  },
+  {
+    "true": "R2L",
+    "predicted": "DoS",
+    "count": 11
+  },
+  {
+    "true": "R2L",
+    "predicted": "Normal",
+    "count": 8
+  },
+  {
+    "true": "R2L",
+    "predicted": "Probe",
+    "count": 23
+  },
+  {
+    "true": "R2L",
+    "predicted": "R2L",
+    "count": 453
+  },
+  {
+    "true": "R2L",
+    "predicted": "U2R",
+    "count": 244
+  },
+  {
+    "true": "U2R",
+    "predicted": "Normal",
+    "count": 1
+  },
+  {
+    "true": "U2R",
+    "predicted": "Probe",
+    "count": 2
+  },
+  {
+    "true": "U2R",
+    "predicted": "R2L",
+    "count": 15
+  },
+  {
+    "true": "U2R",
+    "predicted": "U2R",
+    "count": 14
+  }
+]

@@ -1,0 +1,122 @@
+[
+  {
+    "family": "Normal",
+    "true_class": "Normal",
+    "pred_class": "Generic",
+    "count": 525
+  },
+  {
+    "family": "Normal",
+    "true_class": "Normal",
+    "pred_class": "Exploits",
+    "count": 522
+  },
+  {
+    "family": "Normal",
+    "true_class": "Normal",
+    "pred_class": "Shellcode",
+    "count": 520
+  },
+  {
+    "family": "Normal",
+    "true_class": "Normal",
+    "pred_class": "Reconnaissance",
+    "count": 507
+  },
+  {
+    "family": "Normal",
+    "true_class": "Normal",
+    "pred_class": "Worms",
+    "count": 502
+  },
+  {
+    "family": "Normal",
+    "true_class": "Normal",
+    "pred_class": "Analysis",
+    "count": 502
+  },
+  {
+    "family": "Normal",
+    "true_class": "Normal",
+    "pred_class": "Fuzzers",
+    "count": 492
+  },
+  {
+    "family": "Normal",
+    "true_class": "Normal",
+    "pred_class": "DoS",
+    "count": 489
+  },
+  {
+    "family": "Normal",
+    "true_class": "Normal",
+    "pred_class": "Backdoor",
+    "count": 484
+  },
+  {
+    "family": "Exploits",
+    "true_class": "Exploits",
+    "pred_class": "Reconnaissance",
+    "count": 450
+  },
+  {
+    "family": "Exploits",
+    "true_class": "Exploits",
+    "pred_class": "Shellcode",
+    "count": 438
+  },
+  {
+    "family": "Exploits",
+    "true_class": "Exploits",
+    "pred_class": "Worms",
+    "count": 436
+  },
+  {
+    "family": "Exploits",
+    "true_class": "Exploits",
+    "pred_class": "Fuzzers",
+    "count": 382
+  },
+  {
+    "family": "Generic",
+    "true_class": "Generic",
+    "pred_class": "Analysis",
+    "count": 369
+  },
+  {
+    "family": "Generic",
+    "true_class": "Generic",
+    "pred_class": "Exploits",
+    "count": 365
+  },
+  {
+    "family": "Generic",
+    "true_class": "Generic",
+    "pred_class": "Fuzzers",
+    "count": 354
+  },
+  {
+    "family": "Generic",
+    "true_class": "Generic",
+    "pred_class": "Backdoor",
+    "count": 333
+  },
+  {
+    "family": "Generic",
+    "true_class": "Generic",
+    "pred_class": "Shellcode",
+    "count": 331
+  },
+  {
+    "family": "Generic",
+    "true_class": "Generic",
+    "pred_class": "DoS",
+    "count": 327
+  },
+  {
+    "family": "Generic",
+    "true_class": "Generic",
+    "pred_class": "Reconnaissance",
+    "count": 326
+  }
+]

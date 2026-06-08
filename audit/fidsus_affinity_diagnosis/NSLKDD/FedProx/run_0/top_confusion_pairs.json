@@ -1,0 +1,122 @@
+[
+  {
+    "family": "Normal",
+    "true_class": "Normal",
+    "pred_class": "DoS",
+    "count": 1248
+  },
+  {
+    "family": "Normal",
+    "true_class": "Normal",
+    "pred_class": "Probe",
+    "count": 1236
+  },
+  {
+    "family": "Normal",
+    "true_class": "Normal",
+    "pred_class": "R2L",
+    "count": 1205
+  },
+  {
+    "family": "Normal",
+    "true_class": "Normal",
+    "pred_class": "U2R",
+    "count": 1158
+  },
+  {
+    "family": "DoS",
+    "true_class": "DoS",
+    "pred_class": "R2L",
+    "count": 856
+  },
+  {
+    "family": "DoS",
+    "true_class": "DoS",
+    "pred_class": "Probe",
+    "count": 843
+  },
+  {
+    "family": "DoS",
+    "true_class": "DoS",
+    "pred_class": "U2R",
+    "count": 812
+  },
+  {
+    "family": "DoS",
+    "true_class": "DoS",
+    "pred_class": "Normal",
+    "count": 786
+  },
+  {
+    "family": "Probe",
+    "true_class": "Probe",
+    "pred_class": "R2L",
+    "count": 239
+  },
+  {
+    "family": "Probe",
+    "true_class": "Probe",
+    "pred_class": "DoS",
+    "count": 225
+  },
+  {
+    "family": "Probe",
+    "true_class": "Probe",
+    "pred_class": "U2R",
+    "count": 198
+  },
+  {
+    "family": "Probe",
+    "true_class": "Probe",
+    "pred_class": "Normal",
+    "count": 197
+  },
+  {
+    "family": "Privilege/Access",
+    "true_class": "R2L",
+    "pred_class": "Normal",
+    "count": 97
+  },
+  {
+    "family": "Privilege/Access",
+    "true_class": "R2L",
+    "pred_class": "U2R",
+    "count": 83
+  },
+  {
+    "family": "Privilege/Access",
+    "true_class": "R2L",
+    "pred_class": "DoS",
+    "count": 76
+  },
+  {
+    "family": "Privilege/Access",
+    "true_class": "R2L",
+    "pred_class": "Probe",
+    "count": 76
+  },
+  {
+    "family": "Privilege/Access",
+    "true_class": "U2R",
+    "pred_class": "Normal",
+    "count": 5
+  },
+  {
+    "family": "Privilege/Access",
+    "true_class": "U2R",
+    "pred_class": "Probe",
+    "count": 3
+  },
+  {
+    "family": "Privilege/Access",
+    "true_class": "U2R",
+    "pred_class": "DoS",
+    "count": 3
+  },
+  {
+    "family": "Privilege/Access",
+    "true_class": "U2R",
+    "pred_class": "R2L",
+    "count": 1
+  }
+]

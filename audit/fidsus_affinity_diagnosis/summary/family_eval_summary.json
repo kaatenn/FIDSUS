@@ -1,0 +1,684 @@
+{
+  "summary": [
+    {
+      "dataset": "NSLKDD",
+      "algorithm": "FIDSUS",
+      "goal": "test",
+      "run_id": 0,
+      "fine_grained_accuracy": 0.7462656439241018,
+      "family_level_accuracy": 0.754979141434531,
+      "family_fine_accuracy_gap": 0.008713497510429269,
+      "fine_grained_macro_f1": 0.5117397759921478,
+      "family_level_macro_f1": 0.6330922024864736,
+      "family_fine_macro_f1_gap": 0.12135242649432576,
+      "num_intra_family_pairs_found": 2,
+      "top_confusion_pairs": [
+        {
+          "family": "DoS",
+          "true_class": "DoS",
+          "pred_class": "Probe",
+          "count": 1171,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "R2L",
+          "count": 1002,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "U2R",
+          "count": 983,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "Probe",
+          "count": 956,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "DoS",
+          "count": 914,
+          "is_intra_family": false
+        },
+        {
+          "family": "DoS",
+          "true_class": "DoS",
+          "pred_class": "R2L",
+          "count": 606,
+          "is_intra_family": false
+        },
+        {
+          "family": "DoS",
+          "true_class": "DoS",
+          "pred_class": "U2R",
+          "count": 548,
+          "is_intra_family": false
+        },
+        {
+          "family": "DoS",
+          "true_class": "DoS",
+          "pred_class": "Normal",
+          "count": 348,
+          "is_intra_family": false
+        },
+        {
+          "family": "Privilege/Access",
+          "true_class": "R2L",
+          "pred_class": "U2R",
+          "count": 244,
+          "is_intra_family": true
+        },
+        {
+          "family": "Probe",
+          "true_class": "Probe",
+          "pred_class": "DoS",
+          "count": 231,
+          "is_intra_family": false
+        }
+      ]
+    },
+    {
+      "dataset": "NSLKDD",
+      "algorithm": "FedAvg",
+      "goal": "test",
+      "run_id": 0,
+      "fine_grained_accuracy": 0.6755820212622796,
+      "family_level_accuracy": 0.6786435203875656,
+      "family_fine_accuracy_gap": 0.0030614991252859713,
+      "fine_grained_macro_f1": 0.4619598042997928,
+      "family_level_macro_f1": 0.5596165371776964,
+      "family_fine_macro_f1_gap": 0.09765673287790366,
+      "num_intra_family_pairs_found": 2,
+      "top_confusion_pairs": [
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "Probe",
+          "count": 1261,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "DoS",
+          "count": 1253,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "R2L",
+          "count": 1244,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "U2R",
+          "count": 1241,
+          "is_intra_family": false
+        },
+        {
+          "family": "DoS",
+          "true_class": "DoS",
+          "pred_class": "Normal",
+          "count": 868,
+          "is_intra_family": false
+        },
+        {
+          "family": "DoS",
+          "true_class": "DoS",
+          "pred_class": "U2R",
+          "count": 859,
+          "is_intra_family": false
+        },
+        {
+          "family": "DoS",
+          "true_class": "DoS",
+          "pred_class": "Probe",
+          "count": 846,
+          "is_intra_family": false
+        },
+        {
+          "family": "DoS",
+          "true_class": "DoS",
+          "pred_class": "R2L",
+          "count": 815,
+          "is_intra_family": false
+        },
+        {
+          "family": "Probe",
+          "true_class": "Probe",
+          "pred_class": "U2R",
+          "count": 229,
+          "is_intra_family": false
+        },
+        {
+          "family": "Probe",
+          "true_class": "Probe",
+          "pred_class": "Normal",
+          "count": 226,
+          "is_intra_family": false
+        }
+      ]
+    },
+    {
+      "dataset": "NSLKDD",
+      "algorithm": "FedProx",
+      "goal": "test",
+      "run_id": 0,
+      "fine_grained_accuracy": 0.6855403041313417,
+      "family_level_accuracy": 0.6883663033239134,
+      "family_fine_accuracy_gap": 0.0028259991925716488,
+      "fine_grained_macro_f1": 0.4700471543861748,
+      "family_level_macro_f1": 0.5686147195623965,
+      "family_fine_macro_f1_gap": 0.09856756517622173,
+      "num_intra_family_pairs_found": 2,
+      "top_confusion_pairs": [
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "DoS",
+          "count": 1248,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "Probe",
+          "count": 1236,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "R2L",
+          "count": 1205,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "U2R",
+          "count": 1158,
+          "is_intra_family": false
+        },
+        {
+          "family": "DoS",
+          "true_class": "DoS",
+          "pred_class": "R2L",
+          "count": 856,
+          "is_intra_family": false
+        },
+        {
+          "family": "DoS",
+          "true_class": "DoS",
+          "pred_class": "Probe",
+          "count": 843,
+          "is_intra_family": false
+        },
+        {
+          "family": "DoS",
+          "true_class": "DoS",
+          "pred_class": "U2R",
+          "count": 812,
+          "is_intra_family": false
+        },
+        {
+          "family": "DoS",
+          "true_class": "DoS",
+          "pred_class": "Normal",
+          "count": 786,
+          "is_intra_family": false
+        },
+        {
+          "family": "Probe",
+          "true_class": "Probe",
+          "pred_class": "R2L",
+          "count": 239,
+          "is_intra_family": false
+        },
+        {
+          "family": "Probe",
+          "true_class": "Probe",
+          "pred_class": "DoS",
+          "count": 225,
+          "is_intra_family": false
+        }
+      ]
+    },
+    {
+      "dataset": "NSLKDD",
+      "algorithm": "FedProto",
+      "goal": "test",
+      "run_id": 0,
+      "fine_grained_accuracy": 0.7132283676490379,
+      "family_level_accuracy": 0.7211344368187323,
+      "family_fine_accuracy_gap": 0.007906069169694496,
+      "fine_grained_macro_f1": 0.48594571631268224,
+      "family_level_macro_f1": 0.5987519723582627,
+      "family_fine_macro_f1_gap": 0.11280625604558048,
+      "num_intra_family_pairs_found": 2,
+      "top_confusion_pairs": [
+        {
+          "family": "DoS",
+          "true_class": "DoS",
+          "pred_class": "Probe",
+          "count": 1356,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "U2R",
+          "count": 1142,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "Probe",
+          "count": 1091,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "R2L",
+          "count": 1090,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "DoS",
+          "count": 1052,
+          "is_intra_family": false
+        },
+        {
+          "family": "DoS",
+          "true_class": "DoS",
+          "pred_class": "U2R",
+          "count": 658,
+          "is_intra_family": false
+        },
+        {
+          "family": "DoS",
+          "true_class": "DoS",
+          "pred_class": "R2L",
+          "count": 655,
+          "is_intra_family": false
+        },
+        {
+          "family": "DoS",
+          "true_class": "DoS",
+          "pred_class": "Normal",
+          "count": 357,
+          "is_intra_family": false
+        },
+        {
+          "family": "Probe",
+          "true_class": "Probe",
+          "pred_class": "DoS",
+          "count": 286,
+          "is_intra_family": false
+        },
+        {
+          "family": "Privilege/Access",
+          "true_class": "R2L",
+          "pred_class": "U2R",
+          "count": 226,
+          "is_intra_family": true
+        }
+      ]
+    },
+    {
+      "dataset": "UNSW",
+      "algorithm": "FIDSUS",
+      "goal": "test",
+      "run_id": 0,
+      "fine_grained_accuracy": 0.7466198521852146,
+      "family_level_accuracy": 0.7540493879847142,
+      "family_fine_accuracy_gap": 0.007429535799499565,
+      "fine_grained_macro_f1": 0.5308393187411165,
+      "family_level_macro_f1": 0.6400880838719871,
+      "family_fine_macro_f1_gap": 0.10924876513087067,
+      "num_intra_family_pairs_found": 4,
+      "top_confusion_pairs": [
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "Generic",
+          "count": 525,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "Exploits",
+          "count": 522,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "Shellcode",
+          "count": 520,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "Reconnaissance",
+          "count": 507,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "Worms",
+          "count": 502,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "Analysis",
+          "count": 502,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "Fuzzers",
+          "count": 492,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "DoS",
+          "count": 489,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "Backdoor",
+          "count": 484,
+          "is_intra_family": false
+        },
+        {
+          "family": "Exploits",
+          "true_class": "Exploits",
+          "pred_class": "Reconnaissance",
+          "count": 450,
+          "is_intra_family": false
+        }
+      ]
+    },
+    {
+      "dataset": "UNSW",
+      "algorithm": "FedAvg",
+      "goal": "test",
+      "run_id": 0,
+      "fine_grained_accuracy": 0.6750208531357297,
+      "family_level_accuracy": 0.6765339178677426,
+      "family_fine_accuracy_gap": 0.0015130647320129587,
+      "fine_grained_macro_f1": 0.4681886851934303,
+      "family_level_macro_f1": 0.5561837006985082,
+      "family_fine_macro_f1_gap": 0.08799501550507788,
+      "num_intra_family_pairs_found": 4,
+      "top_confusion_pairs": [
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "Worms",
+          "count": 698,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "Fuzzers",
+          "count": 676,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "Analysis",
+          "count": 669,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "Exploits",
+          "count": 665,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "Backdoor",
+          "count": 662,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "Generic",
+          "count": 656,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "Shellcode",
+          "count": 644,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "DoS",
+          "count": 637,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "Reconnaissance",
+          "count": 633,
+          "is_intra_family": false
+        },
+        {
+          "family": "Generic",
+          "true_class": "Generic",
+          "pred_class": "Fuzzers",
+          "count": 445,
+          "is_intra_family": false
+        }
+      ]
+    },
+    {
+      "dataset": "UNSW",
+      "algorithm": "FedProx",
+      "goal": "test",
+      "run_id": 0,
+      "fine_grained_accuracy": 0.6825473802642044,
+      "family_level_accuracy": 0.6838470640724719,
+      "family_fine_accuracy_gap": 0.0012996838082675044,
+      "fine_grained_macro_f1": 0.4767471450201253,
+      "family_level_macro_f1": 0.563763556603698,
+      "family_fine_macro_f1_gap": 0.08701641158357276,
+      "num_intra_family_pairs_found": 3,
+      "top_confusion_pairs": [
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "Analysis",
+          "count": 698,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "Backdoor",
+          "count": 648,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "Reconnaissance",
+          "count": 646,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "Generic",
+          "count": 645,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "Fuzzers",
+          "count": 637,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "Exploits",
+          "count": 629,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "Worms",
+          "count": 622,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "Shellcode",
+          "count": 615,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "DoS",
+          "count": 613,
+          "is_intra_family": false
+        },
+        {
+          "family": "Generic",
+          "true_class": "Generic",
+          "pred_class": "Backdoor",
+          "count": 443,
+          "is_intra_family": false
+        }
+      ]
+    },
+    {
+      "dataset": "UNSW",
+      "algorithm": "FedProto",
+      "goal": "test",
+      "run_id": 0,
+      "fine_grained_accuracy": 0.7143023413706815,
+      "family_level_accuracy": 0.7206843708172489,
+      "family_fine_accuracy_gap": 0.0063820294465674055,
+      "fine_grained_macro_f1": 0.5012003701079835,
+      "family_level_macro_f1": 0.604781026730858,
+      "family_fine_macro_f1_gap": 0.10358065662287452,
+      "num_intra_family_pairs_found": 4,
+      "top_confusion_pairs": [
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "DoS",
+          "count": 635,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "Exploits",
+          "count": 594,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "Analysis",
+          "count": 589,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "Worms",
+          "count": 587,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "Shellcode",
+          "count": 583,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "Backdoor",
+          "count": 578,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "Fuzzers",
+          "count": 566,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "Generic",
+          "count": 553,
+          "is_intra_family": false
+        },
+        {
+          "family": "Normal",
+          "true_class": "Normal",
+          "pred_class": "Reconnaissance",
+          "count": 541,
+          "is_intra_family": false
+        },
+        {
+          "family": "Exploits",
+          "true_class": "Exploits",
+          "pred_class": "Reconnaissance",
+          "count": 529,
+          "is_intra_family": false
+        }
+      ]
+    }
+  ]
+}

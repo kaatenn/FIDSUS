@@ -1,0 +1,154 @@
+==========================================================================================
+FAMILY-LEVEL EVALUATION SUMMARY
+==========================================================================================
+
+Dataset        Method           Fine Acc  Family Acc  Acc Gap   Fine mF1  Family mF1  mF1 Gap
+------------------------------------------------------------------------------------------
+NSLKDD         FIDSUS             0.7463      0.7550  +0.0087     0.5117      0.6331  +0.1214
+NSLKDD         FedAvg             0.6756      0.6786  +0.0031     0.4620      0.5596  +0.0977
+NSLKDD         FedProx            0.6855      0.6884  +0.0028     0.4700      0.5686  +0.0986
+NSLKDD         FedProto           0.7132      0.7211  +0.0079     0.4859      0.5988  +0.1128
+UNSW           FIDSUS             0.7466      0.7540  +0.0074     0.5308      0.6401  +0.1092
+UNSW           FedAvg             0.6750      0.6765  +0.0015     0.4682      0.5562  +0.0880
+UNSW           FedProx            0.6825      0.6838  +0.0013     0.4767      0.5638  +0.0870
+UNSW           FedProto           0.7143      0.7207  +0.0064     0.5012      0.6048  +0.1036
+
+==========================================================================================
+TOP CONFUSED FINE-GRAINED PAIRS (per dataset/method)
+==========================================================================================
+
+--- NSLKDD / FIDSUS (run 0) ---
+Family                         True                 Predicted               Count  Intra-Family?
+-----------------------------------------------------------------------------------------------
+DoS                            DoS                  Probe                    1171             no
+Normal                         Normal               R2L                      1002             no
+Normal                         Normal               U2R                       983             no
+Normal                         Normal               Probe                     956             no
+Normal                         Normal               DoS                       914             no
+DoS                            DoS                  R2L                       606             no
+DoS                            DoS                  U2R                       548             no
+DoS                            DoS                  Normal                    348             no
+Privilege/Access               R2L                  U2R                       244            YES
+Probe                          Probe                DoS                       231             no
+
+  -> Among top-10 confusion pairs: 244/7003 (3%) are intra-family confusions.
+  -> Confusion is spread across different attack families.
+
+--- NSLKDD / FedAvg (run 0) ---
+Family                         True                 Predicted               Count  Intra-Family?
+-----------------------------------------------------------------------------------------------
+Normal                         Normal               Probe                    1261             no
+Normal                         Normal               DoS                      1253             no
+Normal                         Normal               R2L                      1244             no
+Normal                         Normal               U2R                      1241             no
+DoS                            DoS                  Normal                    868             no
+DoS                            DoS                  U2R                       859             no
+DoS                            DoS                  Probe                     846             no
+DoS                            DoS                  R2L                       815             no
+Probe                          Probe                U2R                       229             no
+Probe                          Probe                Normal                    226             no
+
+  -> Among top-10 confusion pairs: 0/8842 (0%) are intra-family confusions.
+  -> Confusion is spread across different attack families.
+
+--- NSLKDD / FedProx (run 0) ---
+Family                         True                 Predicted               Count  Intra-Family?
+-----------------------------------------------------------------------------------------------
+Normal                         Normal               DoS                      1248             no
+Normal                         Normal               Probe                    1236             no
+Normal                         Normal               R2L                      1205             no
+Normal                         Normal               U2R                      1158             no
+DoS                            DoS                  R2L                       856             no
+DoS                            DoS                  Probe                     843             no
+DoS                            DoS                  U2R                       812             no
+DoS                            DoS                  Normal                    786             no
+Probe                          Probe                R2L                       239             no
+Probe                          Probe                DoS                       225             no
+
+  -> Among top-10 confusion pairs: 0/8608 (0%) are intra-family confusions.
+  -> Confusion is spread across different attack families.
+
+--- NSLKDD / FedProto (run 0) ---
+Family                         True                 Predicted               Count  Intra-Family?
+-----------------------------------------------------------------------------------------------
+DoS                            DoS                  Probe                    1356             no
+Normal                         Normal               U2R                      1142             no
+Normal                         Normal               Probe                    1091             no
+Normal                         Normal               R2L                      1090             no
+Normal                         Normal               DoS                      1052             no
+DoS                            DoS                  U2R                       658             no
+DoS                            DoS                  R2L                       655             no
+DoS                            DoS                  Normal                    357             no
+Probe                          Probe                DoS                       286             no
+Privilege/Access               R2L                  U2R                       226            YES
+
+  -> Among top-10 confusion pairs: 226/7913 (3%) are intra-family confusions.
+  -> Confusion is spread across different attack families.
+
+--- UNSW / FIDSUS (run 0) ---
+Family                         True                 Predicted               Count  Intra-Family?
+-----------------------------------------------------------------------------------------------
+Normal                         Normal               Generic                   525             no
+Normal                         Normal               Exploits                  522             no
+Normal                         Normal               Shellcode                 520             no
+Normal                         Normal               Reconnaissance            507             no
+Normal                         Normal               Worms                     502             no
+Normal                         Normal               Analysis                  502             no
+Normal                         Normal               Fuzzers                   492             no
+Normal                         Normal               DoS                       489             no
+Normal                         Normal               Backdoor                  484             no
+Exploits                       Exploits             Reconnaissance            450             no
+
+  -> Among top-10 confusion pairs: 0/4993 (0%) are intra-family confusions.
+  -> Confusion is spread across different attack families.
+
+--- UNSW / FedAvg (run 0) ---
+Family                         True                 Predicted               Count  Intra-Family?
+-----------------------------------------------------------------------------------------------
+Normal                         Normal               Worms                     698             no
+Normal                         Normal               Fuzzers                   676             no
+Normal                         Normal               Analysis                  669             no
+Normal                         Normal               Exploits                  665             no
+Normal                         Normal               Backdoor                  662             no
+Normal                         Normal               Generic                   656             no
+Normal                         Normal               Shellcode                 644             no
+Normal                         Normal               DoS                       637             no
+Normal                         Normal               Reconnaissance            633             no
+Generic                        Generic              Fuzzers                   445             no
+
+  -> Among top-10 confusion pairs: 0/6385 (0%) are intra-family confusions.
+  -> Confusion is spread across different attack families.
+
+--- UNSW / FedProx (run 0) ---
+Family                         True                 Predicted               Count  Intra-Family?
+-----------------------------------------------------------------------------------------------
+Normal                         Normal               Analysis                  698             no
+Normal                         Normal               Backdoor                  648             no
+Normal                         Normal               Reconnaissance            646             no
+Normal                         Normal               Generic                   645             no
+Normal                         Normal               Fuzzers                   637             no
+Normal                         Normal               Exploits                  629             no
+Normal                         Normal               Worms                     622             no
+Normal                         Normal               Shellcode                 615             no
+Normal                         Normal               DoS                       613             no
+Generic                        Generic              Backdoor                  443             no
+
+  -> Among top-10 confusion pairs: 0/6196 (0%) are intra-family confusions.
+  -> Confusion is spread across different attack families.
+
+--- UNSW / FedProto (run 0) ---
+Family                         True                 Predicted               Count  Intra-Family?
+-----------------------------------------------------------------------------------------------
+Normal                         Normal               DoS                       635             no
+Normal                         Normal               Exploits                  594             no
+Normal                         Normal               Analysis                  589             no
+Normal                         Normal               Worms                     587             no
+Normal                         Normal               Shellcode                 583             no
+Normal                         Normal               Backdoor                  578             no
+Normal                         Normal               Fuzzers                   566             no
+Normal                         Normal               Generic                   553             no
+Normal                         Normal               Reconnaissance            541             no
+Exploits                       Exploits             Reconnaissance            529             no
+
+  -> Among top-10 confusion pairs: 0/5755 (0%) are intra-family confusions.
+  -> Confusion is spread across different attack families.

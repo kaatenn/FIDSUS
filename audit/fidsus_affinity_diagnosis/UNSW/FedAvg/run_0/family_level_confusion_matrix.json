@@ -1,0 +1,322 @@
+[
+  {
+    "true": "Backdoor/Analysis",
+    "predicted": "Backdoor/Analysis",
+    "count": 575
+  },
+  {
+    "true": "Backdoor/Analysis",
+    "predicted": "DoS",
+    "count": 69
+  },
+  {
+    "true": "Backdoor/Analysis",
+    "predicted": "Exploits",
+    "count": 44
+  },
+  {
+    "true": "Backdoor/Analysis",
+    "predicted": "Fuzzing",
+    "count": 46
+  },
+  {
+    "true": "Backdoor/Analysis",
+    "predicted": "Generic",
+    "count": 65
+  },
+  {
+    "true": "Backdoor/Analysis",
+    "predicted": "Normal",
+    "count": 77
+  },
+  {
+    "true": "Backdoor/Analysis",
+    "predicted": "Reconnaissance",
+    "count": 46
+  },
+  {
+    "true": "Backdoor/Analysis",
+    "predicted": "Shellcode/Worms",
+    "count": 106
+  },
+  {
+    "true": "DoS",
+    "predicted": "Backdoor/Analysis",
+    "count": 249
+  },
+  {
+    "true": "DoS",
+    "predicted": "DoS",
+    "count": 2168
+  },
+  {
+    "true": "DoS",
+    "predicted": "Exploits",
+    "count": 117
+  },
+  {
+    "true": "DoS",
+    "predicted": "Fuzzing",
+    "count": 126
+  },
+  {
+    "true": "DoS",
+    "predicted": "Generic",
+    "count": 126
+  },
+  {
+    "true": "DoS",
+    "predicted": "Normal",
+    "count": 137
+  },
+  {
+    "true": "DoS",
+    "predicted": "Reconnaissance",
+    "count": 110
+  },
+  {
+    "true": "DoS",
+    "predicted": "Shellcode/Worms",
+    "count": 238
+  },
+  {
+    "true": "Exploits",
+    "predicted": "Backdoor/Analysis",
+    "count": 594
+  },
+  {
+    "true": "Exploits",
+    "predicted": "DoS",
+    "count": 321
+  },
+  {
+    "true": "Exploits",
+    "predicted": "Exploits",
+    "count": 5985
+  },
+  {
+    "true": "Exploits",
+    "predicted": "Fuzzing",
+    "count": 292
+  },
+  {
+    "true": "Exploits",
+    "predicted": "Generic",
+    "count": 305
+  },
+  {
+    "true": "Exploits",
+    "predicted": "Normal",
+    "count": 361
+  },
+  {
+    "true": "Exploits",
+    "predicted": "Reconnaissance",
+    "count": 313
+  },
+  {
+    "true": "Exploits",
+    "predicted": "Shellcode/Worms",
+    "count": 668
+  },
+  {
+    "true": "Fuzzing",
+    "predicted": "Backdoor/Analysis",
+    "count": 315
+  },
+  {
+    "true": "Fuzzing",
+    "predicted": "DoS",
+    "count": 185
+  },
+  {
+    "true": "Fuzzing",
+    "predicted": "Exploits",
+    "count": 151
+  },
+  {
+    "true": "Fuzzing",
+    "predicted": "Fuzzing",
+    "count": 3370
+  },
+  {
+    "true": "Fuzzing",
+    "predicted": "Generic",
+    "count": 171
+  },
+  {
+    "true": "Fuzzing",
+    "predicted": "Normal",
+    "count": 159
+  },
+  {
+    "true": "Fuzzing",
+    "predicted": "Reconnaissance",
+    "count": 184
+  },
+  {
+    "true": "Fuzzing",
+    "predicted": "Shellcode/Worms",
+    "count": 320
+  },
+  {
+    "true": "Generic",
+    "predicted": "Backdoor/Analysis",
+    "count": 797
+  },
+  {
+    "true": "Generic",
+    "predicted": "DoS",
+    "count": 443
+  },
+  {
+    "true": "Generic",
+    "predicted": "Exploits",
+    "count": 405
+  },
+  {
+    "true": "Generic",
+    "predicted": "Fuzzing",
+    "count": 445
+  },
+  {
+    "true": "Generic",
+    "predicted": "Generic",
+    "count": 8008
+  },
+  {
+    "true": "Generic",
+    "predicted": "Normal",
+    "count": 434
+  },
+  {
+    "true": "Generic",
+    "predicted": "Reconnaissance",
+    "count": 420
+  },
+  {
+    "true": "Generic",
+    "predicted": "Shellcode/Worms",
+    "count": 838
+  },
+  {
+    "true": "Normal",
+    "predicted": "Backdoor/Analysis",
+    "count": 1331
+  },
+  {
+    "true": "Normal",
+    "predicted": "DoS",
+    "count": 637
+  },
+  {
+    "true": "Normal",
+    "predicted": "Exploits",
+    "count": 665
+  },
+  {
+    "true": "Normal",
+    "predicted": "Fuzzing",
+    "count": 676
+  },
+  {
+    "true": "Normal",
+    "predicted": "Generic",
+    "count": 656
+  },
+  {
+    "true": "Normal",
+    "predicted": "Normal",
+    "count": 12644
+  },
+  {
+    "true": "Normal",
+    "predicted": "Reconnaissance",
+    "count": 633
+  },
+  {
+    "true": "Normal",
+    "predicted": "Shellcode/Worms",
+    "count": 1342
+  },
+  {
+    "true": "Reconnaissance",
+    "predicted": "Backdoor/Analysis",
+    "count": 219
+  },
+  {
+    "true": "Reconnaissance",
+    "predicted": "DoS",
+    "count": 101
+  },
+  {
+    "true": "Reconnaissance",
+    "predicted": "Exploits",
+    "count": 83
+  },
+  {
+    "true": "Reconnaissance",
+    "predicted": "Fuzzing",
+    "count": 117
+  },
+  {
+    "true": "Reconnaissance",
+    "predicted": "Generic",
+    "count": 90
+  },
+  {
+    "true": "Reconnaissance",
+    "predicted": "Normal",
+    "count": 83
+  },
+  {
+    "true": "Reconnaissance",
+    "predicted": "Reconnaissance",
+    "count": 1949
+  },
+  {
+    "true": "Reconnaissance",
+    "predicted": "Shellcode/Worms",
+    "count": 206
+  },
+  {
+    "true": "Shellcode/Worms",
+    "predicted": "Backdoor/Analysis",
+    "count": 33
+  },
+  {
+    "true": "Shellcode/Worms",
+    "predicted": "DoS",
+    "count": 22
+  },
+  {
+    "true": "Shellcode/Worms",
+    "predicted": "Exploits",
+    "count": 24
+  },
+  {
+    "true": "Shellcode/Worms",
+    "predicted": "Fuzzing",
+    "count": 24
+  },
+  {
+    "true": "Shellcode/Worms",
+    "predicted": "Generic",
+    "count": 15
+  },
+  {
+    "true": "Shellcode/Worms",
+    "predicted": "Normal",
+    "count": 21
+  },
+  {
+    "true": "Shellcode/Worms",
+    "predicted": "Reconnaissance",
+    "count": 20
+  },
+  {
+    "true": "Shellcode/Worms",
+    "predicted": "Shellcode/Worms",
+    "count": 177
+  }
+]

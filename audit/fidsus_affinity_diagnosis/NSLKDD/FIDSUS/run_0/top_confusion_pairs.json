@@ -1,0 +1,116 @@
+[
+  {
+    "family": "DoS",
+    "true_class": "DoS",
+    "pred_class": "Probe",
+    "count": 1171
+  },
+  {
+    "family": "Normal",
+    "true_class": "Normal",
+    "pred_class": "R2L",
+    "count": 1002
+  },
+  {
+    "family": "Normal",
+    "true_class": "Normal",
+    "pred_class": "U2R",
+    "count": 983
+  },
+  {
+    "family": "Normal",
+    "true_class": "Normal",
+    "pred_class": "Probe",
+    "count": 956
+  },
+  {
+    "family": "Normal",
+    "true_class": "Normal",
+    "pred_class": "DoS",
+    "count": 914
+  },
+  {
+    "family": "DoS",
+    "true_class": "DoS",
+    "pred_class": "R2L",
+    "count": 606
+  },
+  {
+    "family": "DoS",
+    "true_class": "DoS",
+    "pred_class": "U2R",
+    "count": 548
+  },
+  {
+    "family": "DoS",
+    "true_class": "DoS",
+    "pred_class": "Normal",
+    "count": 348
+  },
+  {
+    "family": "Privilege/Access",
+    "true_class": "R2L",
+    "pred_class": "U2R",
+    "count": 244
+  },
+  {
+    "family": "Probe",
+    "true_class": "Probe",
+    "pred_class": "DoS",
+    "count": 231
+  },
+  {
+    "family": "Probe",
+    "true_class": "Probe",
+    "pred_class": "U2R",
+    "count": 206
+  },
+  {
+    "family": "Probe",
+    "true_class": "Probe",
+    "pred_class": "R2L",
+    "count": 200
+  },
+  {
+    "family": "Probe",
+    "true_class": "Probe",
+    "pred_class": "Normal",
+    "count": 73
+  },
+  {
+    "family": "Privilege/Access",
+    "true_class": "R2L",
+    "pred_class": "Probe",
+    "count": 23
+  },
+  {
+    "family": "Privilege/Access",
+    "true_class": "U2R",
+    "pred_class": "R2L",
+    "count": 15
+  },
+  {
+    "family": "Privilege/Access",
+    "true_class": "R2L",
+    "pred_class": "DoS",
+    "count": 11
+  },
+  {
+    "family": "Privilege/Access",
+    "true_class": "R2L",
+    "pred_class": "Normal",
+    "count": 8
+  },
+  {
+    "family": "Privilege/Access",
+    "true_class": "U2R",
+    "pred_class": "Probe",
+    "count": 2
+  },
+  {
+    "family": "Privilege/Access",
+    "true_class": "U2R",
+    "pred_class": "Normal",
+    "count": 1
+  }
+]

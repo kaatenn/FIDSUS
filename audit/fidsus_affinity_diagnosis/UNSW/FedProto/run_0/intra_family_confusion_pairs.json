@@ -1,0 +1,26 @@
+[
+  {
+    "family": "Backdoor/Analysis",
+    "true_class": "Analysis",
+    "pred_class": "Backdoor",
+    "count": 161
+  },
+  {
+    "family": "Backdoor/Analysis",
+    "true_class": "Backdoor",
+    "pred_class": "Analysis",
+    "count": 112
+  },
+  {
+    "family": "Shellcode/Worms",
+    "true_class": "Shellcode",
+    "pred_class": "Worms",
+    "count": 46
+  },
+  {
+    "family": "Shellcode/Worms",
+    "true_class": "Worms",
+    "pred_class": "Shellcode",
+    "count": 10
+  }
+]

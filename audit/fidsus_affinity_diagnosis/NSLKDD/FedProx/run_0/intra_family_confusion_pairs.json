@@ -1,0 +1,14 @@
+[
+  {
+    "family": "Privilege/Access",
+    "true_class": "R2L",
+    "pred_class": "U2R",
+    "count": 83
+  },
+  {
+    "family": "Privilege/Access",
+    "true_class": "U2R",
+    "pred_class": "R2L",
+    "count": 1
+  }
+]

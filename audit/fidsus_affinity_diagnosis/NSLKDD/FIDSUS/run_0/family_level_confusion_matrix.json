@@ -1,0 +1,82 @@
+[
+  {
+    "true": "DoS",
+    "predicted": "DoS",
+    "count": 8045
+  },
+  {
+    "true": "DoS",
+    "predicted": "Normal",
+    "count": 348
+  },
+  {
+    "true": "DoS",
+    "predicted": "Privilege/Access",
+    "count": 1154
+  },
+  {
+    "true": "DoS",
+    "predicted": "Probe",
+    "count": 1171
+  },
+  {
+    "true": "Normal",
+    "predicted": "DoS",
+    "count": 914
+  },
+  {
+    "true": "Normal",
+    "predicted": "Normal",
+    "count": 11588
+  },
+  {
+    "true": "Normal",
+    "predicted": "Privilege/Access",
+    "count": 1985
+  },
+  {
+    "true": "Normal",
+    "predicted": "Probe",
+    "count": 956
+  },
+  {
+    "true": "Privilege/Access",
+    "predicted": "DoS",
+    "count": 11
+  },
+  {
+    "true": "Privilege/Access",
+    "predicted": "Normal",
+    "count": 9
+  },
+  {
+    "true": "Privilege/Access",
+    "predicted": "Privilege/Access",
+    "count": 726
+  },
+  {
+    "true": "Privilege/Access",
+    "predicted": "Probe",
+    "count": 25
+  },
+  {
+    "true": "Probe",
+    "predicted": "DoS",
+    "count": 231
+  },
+  {
+    "true": "Probe",
+    "predicted": "Normal",
+    "count": 73
+  },
+  {
+    "true": "Probe",
+    "predicted": "Privilege/Access",
+    "count": 406
+  },
+  {
+    "true": "Probe",
+    "predicted": "Probe",
+    "count": 2082
+  }
+]

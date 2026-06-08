@@ -1,0 +1,497 @@
+[
+  {
+    "true": "Analysis",
+    "predicted": "Analysis",
+    "count": 290
+  },
+  {
+    "true": "Analysis",
+    "predicted": "Backdoor",
+    "count": 15
+  },
+  {
+    "true": "Analysis",
+    "predicted": "DoS",
+    "count": 28
+  },
+  {
+    "true": "Analysis",
+    "predicted": "Exploits",
+    "count": 24
+  },
+  {
+    "true": "Analysis",
+    "predicted": "Fuzzers",
+    "count": 26
+  },
+  {
+    "true": "Analysis",
+    "predicted": "Generic",
+    "count": 25
+  },
+  {
+    "true": "Analysis",
+    "predicted": "Normal",
+    "count": 30
+  },
+  {
+    "true": "Analysis",
+    "predicted": "Reconnaissance",
+    "count": 30
+  },
+  {
+    "true": "Analysis",
+    "predicted": "Shellcode",
+    "count": 32
+  },
+  {
+    "true": "Analysis",
+    "predicted": "Worms",
+    "count": 23
+  },
+  {
+    "true": "Backdoor",
+    "predicted": "Analysis",
+    "count": 32
+  },
+  {
+    "true": "Backdoor",
+    "predicted": "Backdoor",
+    "count": 273
+  },
+  {
+    "true": "Backdoor",
+    "predicted": "DoS",
+    "count": 21
+  },
+  {
+    "true": "Backdoor",
+    "predicted": "Exploits",
+    "count": 31
+  },
+  {
+    "true": "Backdoor",
+    "predicted": "Fuzzers",
+    "count": 30
+  },
+  {
+    "true": "Backdoor",
+    "predicted": "Generic",
+    "count": 27
+  },
+  {
+    "true": "Backdoor",
+    "predicted": "Normal",
+    "count": 29
+  },
+  {
+    "true": "Backdoor",
+    "predicted": "Reconnaissance",
+    "count": 24
+  },
+  {
+    "true": "Backdoor",
+    "predicted": "Shellcode",
+    "count": 12
+  },
+  {
+    "true": "Backdoor",
+    "predicted": "Worms",
+    "count": 26
+  },
+  {
+    "true": "DoS",
+    "predicted": "Analysis",
+    "count": 120
+  },
+  {
+    "true": "DoS",
+    "predicted": "Backdoor",
+    "count": 112
+  },
+  {
+    "true": "DoS",
+    "predicted": "DoS",
+    "count": 2274
+  },
+  {
+    "true": "DoS",
+    "predicted": "Exploits",
+    "count": 111
+  },
+  {
+    "true": "DoS",
+    "predicted": "Fuzzers",
+    "count": 114
+  },
+  {
+    "true": "DoS",
+    "predicted": "Generic",
+    "count": 92
+  },
+  {
+    "true": "DoS",
+    "predicted": "Normal",
+    "count": 104
+  },
+  {
+    "true": "DoS",
+    "predicted": "Reconnaissance",
+    "count": 131
+  },
+  {
+    "true": "DoS",
+    "predicted": "Shellcode",
+    "count": 112
+  },
+  {
+    "true": "DoS",
+    "predicted": "Worms",
+    "count": 101
+  },
+  {
+    "true": "Exploits",
+    "predicted": "Analysis",
+    "count": 322
+  },
+  {
+    "true": "Exploits",
+    "predicted": "Backdoor",
+    "count": 306
+  },
+  {
+    "true": "Exploits",
+    "predicted": "DoS",
+    "count": 333
+  },
+  {
+    "true": "Exploits",
+    "predicted": "Exploits",
+    "count": 6082
+  },
+  {
+    "true": "Exploits",
+    "predicted": "Fuzzers",
+    "count": 300
+  },
+  {
+    "true": "Exploits",
+    "predicted": "Generic",
+    "count": 300
+  },
+  {
+    "true": "Exploits",
+    "predicted": "Normal",
+    "count": 277
+  },
+  {
+    "true": "Exploits",
+    "predicted": "Reconnaissance",
+    "count": 306
+  },
+  {
+    "true": "Exploits",
+    "predicted": "Shellcode",
+    "count": 299
+  },
+  {
+    "true": "Exploits",
+    "predicted": "Worms",
+    "count": 314
+  },
+  {
+    "true": "Fuzzers",
+    "predicted": "Analysis",
+    "count": 194
+  },
+  {
+    "true": "Fuzzers",
+    "predicted": "Backdoor",
+    "count": 177
+  },
+  {
+    "true": "Fuzzers",
+    "predicted": "DoS",
+    "count": 158
+  },
+  {
+    "true": "Fuzzers",
+    "predicted": "Exploits",
+    "count": 170
+  },
+  {
+    "true": "Fuzzers",
+    "predicted": "Fuzzers",
+    "count": 3313
+  },
+  {
+    "true": "Fuzzers",
+    "predicted": "Generic",
+    "count": 180
+  },
+  {
+    "true": "Fuzzers",
+    "predicted": "Normal",
+    "count": 145
+  },
+  {
+    "true": "Fuzzers",
+    "predicted": "Reconnaissance",
+    "count": 164
+  },
+  {
+    "true": "Fuzzers",
+    "predicted": "Shellcode",
+    "count": 182
+  },
+  {
+    "true": "Fuzzers",
+    "predicted": "Worms",
+    "count": 172
+  },
+  {
+    "true": "Generic",
+    "predicted": "Analysis",
+    "count": 404
+  },
+  {
+    "true": "Generic",
+    "predicted": "Backdoor",
+    "count": 443
+  },
+  {
+    "true": "Generic",
+    "predicted": "DoS",
+    "count": 426
+  },
+  {
+    "true": "Generic",
+    "predicted": "Exploits",
+    "count": 409
+  },
+  {
+    "true": "Generic",
+    "predicted": "Fuzzers",
+    "count": 440
+  },
+  {
+    "true": "Generic",
+    "predicted": "Generic",
+    "count": 8001
+  },
+  {
+    "true": "Generic",
+    "predicted": "Normal",
+    "count": 402
+  },
+  {
+    "true": "Generic",
+    "predicted": "Reconnaissance",
+    "count": 423
+  },
+  {
+    "true": "Generic",
+    "predicted": "Shellcode",
+    "count": 439
+  },
+  {
+    "true": "Generic",
+    "predicted": "Worms",
+    "count": 403
+  },
+  {
+    "true": "Normal",
+    "predicted": "Analysis",
+    "count": 698
+  },
+  {
+    "true": "Normal",
+    "predicted": "Backdoor",
+    "count": 648
+  },
+  {
+    "true": "Normal",
+    "predicted": "DoS",
+    "count": 613
+  },
+  {
+    "true": "Normal",
+    "predicted": "Exploits",
+    "count": 629
+  },
+  {
+    "true": "Normal",
+    "predicted": "Fuzzers",
+    "count": 637
+  },
+  {
+    "true": "Normal",
+    "predicted": "Generic",
+    "count": 645
+  },
+  {
+    "true": "Normal",
+    "predicted": "Normal",
+    "count": 12831
+  },
+  {
+    "true": "Normal",
+    "predicted": "Reconnaissance",
+    "count": 646
+  },
+  {
+    "true": "Normal",
+    "predicted": "Shellcode",
+    "count": 615
+  },
+  {
+    "true": "Normal",
+    "predicted": "Worms",
+    "count": 622
+  },
+  {
+    "true": "Reconnaissance",
+    "predicted": "Analysis",
+    "count": 98
+  },
+  {
+    "true": "Reconnaissance",
+    "predicted": "Backdoor",
+    "count": 99
+  },
+  {
+    "true": "Reconnaissance",
+    "predicted": "DoS",
+    "count": 92
+  },
+  {
+    "true": "Reconnaissance",
+    "predicted": "Exploits",
+    "count": 110
+  },
+  {
+    "true": "Reconnaissance",
+    "predicted": "Fuzzers",
+    "count": 96
+  },
+  {
+    "true": "Reconnaissance",
+    "predicted": "Generic",
+    "count": 94
+  },
+  {
+    "true": "Reconnaissance",
+    "predicted": "Normal",
+    "count": 111
+  },
+  {
+    "true": "Reconnaissance",
+    "predicted": "Reconnaissance",
+    "count": 1947
+  },
+  {
+    "true": "Reconnaissance",
+    "predicted": "Shellcode",
+    "count": 99
+  },
+  {
+    "true": "Reconnaissance",
+    "predicted": "Worms",
+    "count": 102
+  },
+  {
+    "true": "Shellcode",
+    "predicted": "Analysis",
+    "count": 16
+  },
+  {
+    "true": "Shellcode",
+    "predicted": "Backdoor",
+    "count": 14
+  },
+  {
+    "true": "Shellcode",
+    "predicted": "DoS",
+    "count": 17
+  },
+  {
+    "true": "Shellcode",
+    "predicted": "Exploits",
+    "count": 15
+  },
+  {
+    "true": "Shellcode",
+    "predicted": "Fuzzers",
+    "count": 8
+  },
+  {
+    "true": "Shellcode",
+    "predicted": "Generic",
+    "count": 19
+  },
+  {
+    "true": "Shellcode",
+    "predicted": "Normal",
+    "count": 16
+  },
+  {
+    "true": "Shellcode",
+    "predicted": "Reconnaissance",
+    "count": 14
+  },
+  {
+    "true": "Shellcode",
+    "predicted": "Shellcode",
+    "count": 162
+  },
+  {
+    "true": "Shellcode",
+    "predicted": "Worms",
+    "count": 20
+  },
+  {
+    "true": "Worms",
+    "predicted": "Analysis",
+    "count": 2
+  },
+  {
+    "true": "Worms",
+    "predicted": "Backdoor",
+    "count": 3
+  },
+  {
+    "true": "Worms",
+    "predicted": "DoS",
+    "count": 2
+  },
+  {
+    "true": "Worms",
+    "predicted": "Exploits",
+    "count": 2
+  },
+  {
+    "true": "Worms",
+    "predicted": "Fuzzers",
+    "count": 3
+  },
+  {
+    "true": "Worms",
+    "predicted": "Generic",
+    "count": 4
+  },
+  {
+    "true": "Worms",
+    "predicted": "Normal",
+    "count": 3
+  },
+  {
+    "true": "Worms",
+    "predicted": "Reconnaissance",
+    "count": 3
+  },
+  {
+    "true": "Worms",
+    "predicted": "Worms",
+    "count": 13
+  }
+]
