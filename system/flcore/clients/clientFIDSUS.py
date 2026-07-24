@@ -9,6 +9,10 @@ from flcore.clients.clientbase import Client
 from torch.utils.data import DataLoader
 from flcore.optimizers.fedoptimizer import PerturbedGradientDescent
 from utils.data_utils import  read_client_data_un
+from utils.metrics_utils import (
+    update_confusion_counts,
+    new_confusion,
+)
 import torch.nn.functional as F
 from collections import defaultdict
 from sklearn.preprocessing import label_binarize
@@ -73,7 +77,11 @@ class clientFIDSUS(Client):
                     protos_per[y_c].append(reg_per[i, :].detach().data)
         self.protos_g = agg_func(protos)
         self.protos_per = agg_func(protos_per)
-        self.protos = aggregation(self.protos_g, self.protos_per)
+        # 跨轮特征融合开关：消融实验可关闭 MMD 融合
+        if self.use_fusion:
+            self.protos = aggregation(self.protos_g, self.protos_per)
+        else:
+            self.protos = self.protos_g
         if self.learning_rate_decay:
             self.learning_rate_scheduler.step()
         self.train_time_cost['num_rounds'] += 1
@@ -206,6 +214,42 @@ class clientFIDSUS(Client):
         auc = metrics.roc_auc_score(y_true, y_prob, average='micro')
         return test_acc, test_num, auc
 
+    def test_metrics_personalized_per_label(self):
+        """返回 (test_acc, test_num, auc, confusion)，含逐标签混淆统计。"""
+        testloaderfull = self.load_test_data()
+        self.model_per.eval()
+        test_acc = 0
+        test_num = 0
+        y_prob = []
+        y_true = []
+        confusion = new_confusion(self.num_classes)
+        with torch.no_grad():
+            for x, y in testloaderfull:
+                if type(x) == type([]):
+                    x[0] = x[0].to(self.device)
+                else:
+                    x = x.to(self.device)
+                y = y.to(self.device)
+                output = self.model_per(x)
+                preds = torch.argmax(output, dim=1)
+                test_acc += (torch.sum(preds == y)).item()
+                test_num += y.shape[0]
+                confusion = update_confusion_counts(
+                    confusion,
+                    y.detach().cpu().numpy(),
+                    preds.detach().cpu().numpy(),
+                    self.num_classes,
+                )
+                y_prob.append(F.softmax(output).detach().cpu().numpy())
+                y_true.append(label_binarize(y.detach().cpu().numpy(), classes=np.arange(self.num_classes)))
+        y_prob = np.concatenate(y_prob, axis=0)
+        y_true = np.concatenate(y_true, axis=0)
+        try:
+            auc = metrics.roc_auc_score(y_true, y_prob, average='micro')
+        except ValueError:
+            auc = 0.5
+        return test_acc, test_num, auc, confusion
+
 
 def MMD(x, y, kernel, device='cpu'):
     xx = torch.mm(x.unsqueeze(1), x.unsqueeze(0))
@@ -249,7 +293,9 @@ def aggregation(protos, protos_per):
     aggregated_protos = {}
     for label in protos:
         if label in protos_per:
-            mmd_value = MMD(protos[label], protos_per[label], 'rbf', device='cuda')
+            # 自动推断设备，兼容 CPU / CUDA
+            device = protos[label].device if torch.is_tensor(protos[label]) else 'cpu'
+            mmd_value = MMD(protos[label], protos_per[label], 'rbf', device=device)
             normalized_mmd = (mmd_value - torch.min(mmd_value)) / (torch.max(mmd_value) - torch.min(mmd_value))
             weight = 1 - normalized_mmd
             aggregated_protos[label] = weight * protos[label] + (1 - weight) * protos_per[label]

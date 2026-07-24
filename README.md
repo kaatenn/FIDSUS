@@ -11,19 +11,10 @@ The dynamic nature of UAV swarms, characterized by communication instability, he
 
 This project requires the following dependencies to be installed:
 
-### Conda Channels
-
-Make sure you have the following conda channels enabled:
-
-- `pytorch`
-- `nvidia`
-- `defaults`
-
 ### Packages
 
 The following packages are required:
 
-- `pip==22`
 - `pandas`
 - `scikit-learn`
 - `scipy`
@@ -42,9 +33,18 @@ The following packages are required:
 - `portalocker`
 - `cvxpy`
 
-### Installation
+### Installation (uv, recommended)
 
-To install all dependencies, you can create a conda environment using the provided `env.yaml` file:
+This project is managed with [uv](https://docs.astral.sh/uv/):
+
+```bash
+uv sync            # 安装运行依赖
+uv sync --group dev  # 额外安装测试依赖 (pytest)
+```
+
+### Installation (Conda, legacy)
+
+You can also create a conda environment using the provided `env.yaml` file:
 
 ```bash
 conda env create -f env.yaml
@@ -64,10 +64,38 @@ The core components of this project, which are central to the algorithms discuss
 
 ## Running the Project
 
+### One-command experiments (recommended)
+
+Run the full rare-label comparison (FIDSUS vs FedAvg vs FIDSUS_no_fusion on NSL-KDD + UNSW-NB15, 100 rounds) with a single command:
+
+```bash
+cd system
+uv run python run_all.py              # full experiment (needs GPU)
+uv run python run_all.py --quick      # quick smoke test (CPU, ~1 min)
+```
+
+This produces per-algorithm `.h5` result files plus a `results/summary.csv` with rare-label precision/recall and convergence-speed comparison. See [`docs/usage-guide.md`](docs/usage-guide.md) §7–§11 for details.
+
+A bash equivalent is also provided at the repo root:
+
+```bash
+bash run_experiments.sh            # full
+QUICK=1 bash run_experiments.sh    # smoke
+```
+
+### Single run
+
 To run the project, navigate to the `system` directory and execute the following command:
 
 ```bash
-bash run.sh
+cd system
+uv run python main.py -algo FIDSUS -data UNSW -nc 50 -gr 100
+```
+
+### Tests
+
+```bash
+uv run pytest tests/ -v
 ```
 
 

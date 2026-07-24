@@ -135,12 +135,15 @@ python main.py -data UNSW -algo FIDSUS -nc 50 -gr 100 -lbs 64
 | `-ld` | bool | `False` | 是否启用学习率衰减 |
 | `-ldg` | float | `0.1` | 学习率衰减 gamma |
 | `-tth` | float | `10000` | 慢客户端超时阈值（秒） |
+| `-uf` | bool | `True` | FIDSUS: 是否启用跨轮特征融合。`False` 即消融变体 `FIDSUS_no_fusion` |
+| `-rtl` | str | `""` | 逗号分隔的少数标签列表，如 `2` 或 `8,4,1,2`；为空按数据集自动选取 |
 
 ### 3.3 可选算法
 
 | 算法参数值 | 论文中角色 |
 |-----------|-----------|
 | `FIDSUS` | **本文提出方法** |
+| `FIDSUS_no_fusion` | **消融**：去掉 FIDSUS 的跨轮特征融合（MMD）部分 |
 | `FedAvg` | 基线：加权联邦平均 |
 | `FedProx` | 对比：近端正则化 |
 | `FedProto` | 对比：原型聚合 |
@@ -269,3 +272,175 @@ A: 修改 generate 脚本中的 `num_clients` 并重新生成数据，运行实�
 
 ### Q: torch 版本必须用 2.0.1 吗？
 A: 这是论文原始环境版本。如需升级，编辑 `pyproject.toml` 中的 torch 相关版本号，注意同步更新 `torchaudio`/`torchvision`/`torchtext` 的兼容版本，然后执行 `uv lock --upgrade-package torch`。
+
+## 7. 少数标签对比实验（FIDSUS vs FedAvg vs FIDSUS_no_fusion）
+
+本章节对应论文中针对"样本较少标签"的对比实验，覆盖四个目标：
+
+| 编号 | 目标 | 对应方法 |
+|------|------|---------|
+| ① | 少数标签上的准确率/召回率 | **FIDSUS** |
+| ② | 少数标签上的准确率/召回率 | **FedAvg** |
+| ③ | 少数标签上的准确率/召回率 | **FIDSUS_no_fusion**（去掉跨轮特征融合） |
+| ④ | 收敛速度对比 | **FIDSUS** vs **FIDSUS_no_fusion** |
+
+### 7.1 少数标签的定义
+
+少数标签按各数据集的**全局训练样本量**统计确定（见 `system/utils/metrics_utils.py` 的 `RARE_LABELS`）：
+
+| 数据集 | 少数标签 | 样本量（参考） |
+|--------|---------|---------------|
+| NSL-KDD | `2` | 87（极少） |
+| UNSW-NB15 | `8, 4, 1, 2` | 139 / 1210 / 1824 / 2154 |
+
+可用命令行 `-rtl` 覆盖，例如 `-rtl 2,3`。
+
+### 7.2 指标计算
+
+每一轮训练都会计算并记录**每个标签**的 precision 与 recall（基于逐标签 TP/FP/FN 统计）：
+- 全局模型算法（FedAvg）：用 `evaluate()` 路径
+- 个性化算法（FIDSUS / FIDSUS_no_fusion）：用 `evaluate_personalized()` 路径
+
+结果写入 h5 文件的新增字段：
+- `rs_test_precision`: 形状 `(rounds, num_classes)`，每轮每标签 precision
+- `rs_test_recall`: 形状 `(rounds, num_classes)`，每轮每标签 recall
+- `rare_labels`: 少数标签索引数组
+
+训练过程中每轮会打印形如：
+```
+Rare labels | label8: P=0.1200 R=0.3400  label4: P=0.5600 R=0.7100
+```
+
+### 7.3 FIDSUS_no_fusion 消融变体
+
+通过参数 `-uf False`（或直接选算法 `FIDSUS_no_fusion`）禁用 FIDSUS 的**跨轮特征融合**（MMD）部分，其余保持一致：
+
+```bash
+# 方式一：直接用算法名（推荐，结果文件自动带 _no_fusion 后缀）
+python main.py -algo FIDSUS_no_fusion -data UNSW -nc 50 -gr 100
+
+# 方式二：用 -uf 参数
+python main.py -algo FIDSUS -uf False -data UNSW -nc 50 -gr 100 -go nofusion
+```
+
+对应代码：`clientFIDSUS.py` 的 `train()` 中
+```python
+if self.use_fusion:
+    self.protos = aggregation(self.protos_g, self.protos_per)  # MMD 融合
+else:
+    self.protos = self.protos_g                                # 仅全局原型
+```
+
+## 8. 收敛速度分析
+
+收敛速度由 `system/utils/metrics_utils.py::compute_convergence_speed()` 计算，指标包括：
+
+| 指标 | 含义 |
+|------|------|
+| `best_acc` | 全程最高准确率 |
+| `best_round` | 达到最高准确率的轮次 |
+| `converge_round` | 首次达到 `90% × best_acc` 的轮次（越小收敛越快） |
+| `tail_std` | 末尾 10 轮准确率标准差（越小越稳定） |
+
+对比 `FIDSUS` 与 `FIDSUS_no_fusion` 的 `converge_round` 即可判断跨轮特征融合对收敛速度的影响。
+
+## 9. 一键运行实验
+
+项目提供两种一键运行方式（功能等价），在 `system/` 目录运行：
+
+### 9.1 Python 版（推荐，Windows 友好）
+
+```bash
+cd system
+
+# 真实实验：NSLKDD + UNSW，三种算法，100 轮（需 GPU）
+uv run python run_all.py
+
+# 快速冒烟测试（CPU 也能跑，2 轮 / 3 客户端，用于验证可运行）
+uv run python run_all.py --quick
+
+# 仅指定数据集 / 算法
+uv run python run_all.py --datasets UNSW
+uv run python run_all.py --algos FIDSUS FIDSUS_no_fusion
+
+# 跳过训练，仅汇总已有结果
+uv run python run_all.py --summary-only --goal rare_label_exp
+```
+
+运行结束后：
+- 每个组合的结果写入 `results/{dataset}_{algo}_{goal}_{run}.h5`
+- 汇总表写入 `results/summary.csv`
+- 终端打印少数标签 precision/recall 表 + 收敛速度对比表
+
+`run_all.py` 关键参数：
+
+| 参数 | 默认 | 说明 |
+|------|------|------|
+| `--datasets` | `NSLKDD UNSW` | 参与的数据集 |
+| `--algos` | `FedAvg FIDSUS FIDSUS_no_fusion` | 参与的算法 |
+| `--rounds` | `100` | 全局轮次 |
+| `--clients` | `50` | 客户端数 |
+| `--times` | `1` | 每组合重复次数 |
+| `--device` | `cuda` | 设备 |
+| `--goal` | `rare_label_exp` | 实验标识 |
+| `--quick` | off | 冒烟模式（2轮/3客户端/cpu） |
+
+### 9.2 Bash 版（Linux / WSL）
+
+```bash
+# 真实实验
+bash run_experiments.sh
+
+# 快速冒烟
+QUICK=1 bash run_experiments.sh
+
+# 自定义轮次 / 设备
+ROUNDS=200 DEVICE=cuda bash run_experiments.sh
+```
+
+汇总：`bash run_experiments.sh` 结束后运行 `uv run python run_all.py --summary-only`。
+
+## 10. 测试
+
+项目在 `tests/` 下提供测试，用 `uv`（或项目 `.venv`）运行：
+
+```bash
+# 安装测试依赖（首次）
+uv sync --group dev
+
+# 运行全部测试（CPU，约 10 秒）
+uv run pytest tests/ -v
+```
+
+测试覆盖：
+- `test_metrics.py`：逐标签 precision/recall、收敛速度计算逻辑
+- `test_models.py`：CNN1D / BaseHeadSplit 前向 shape、梯度分离
+- `test_data_utils.py`：合成数据集 npz 读取
+- `test_client_server.py`：FedAvg / FIDSUS / FIDSUS_no_fusion 端到端跑通（合成小数据，CPU）
+
+> 测试使用 `tests/conftest.py` 自动生成的合成 MINI 数据集，**不依赖大数据集、不依赖 GPU**，可在任何机器秒级验证代码可运行。
+
+## 11. 结果文件字段说明
+
+每个 `results/{dataset}_{algo}_{goal}_{run}.h5` 包含：
+
+| 字段 | 形状 | 说明 |
+|------|------|------|
+| `rs_test_acc` | `(rounds,)` | 每轮总体加权准确率 |
+| `rs_test_auc` | `(rounds,)` | 每轮总体 micro AUC |
+| `rs_train_loss` | `(rounds,)` | 每轮训练损失 |
+| `rs_test_precision` | `(rounds, num_classes)` | 每轮每标签 precision（**新增**） |
+| `rs_test_recall` | `(rounds, num_classes)` | 每轮每标签 recall（**新增**） |
+| `rare_labels` | `(k,)` | 少数标签索引（**新增**） |
+
+读取示例：
+
+```python
+import h5py, numpy as np
+with h5py.File("results/UNSW_FIDSUS_rare_label_exp_0.h5", "r") as f:
+    acc = np.array(f["rs_test_acc"])
+    recall = np.array(f["rs_test_recall"])   # (rounds, num_classes)
+    rare = np.array(f["rare_labels"])
+# 少数标签 label8 的召回率曲线
+print(recall[:, 8])
+```

@@ -7,6 +7,11 @@ from torch.utils.data import DataLoader
 
 from flcore.clients.clientFIDSUS import clientFIDSUS
 from flcore.servers.serverbase import Server
+from utils.metrics_utils import (
+    new_confusion,
+    add_confusion,
+    compute_per_label_metrics,
+)
 
 import torch.nn as nn
 
@@ -128,6 +133,15 @@ class FIDSUS(Server):
         ids = [c.id for c in self.clients]
         return ids, num_samples, tot_correct, tot_auc
 
+    def test_metrics_personalized_per_label(self):
+        """聚合所有客户端个性化模型的逐标签混淆统计。"""
+        confusion = new_confusion(self.num_classes)
+        for c in self.clients:
+            if hasattr(c, 'test_metrics_personalized_per_label'):
+                _, _, _, cm = c.test_metrics_personalized_per_label()
+                confusion = add_confusion(confusion, cm)
+        return confusion
+
     def evaluate_personalized(self, acc=None, loss=None):
         stats = self.test_metrics_personalized()
         stats_train = self.train_metrics_personalized()
@@ -144,9 +158,19 @@ class FIDSUS(Server):
             self.rs_train_loss.append(train_loss)
         else:
             loss.append(train_loss)
+
+        # 逐标签 precision / recall
+        confusion = self.test_metrics_personalized_per_label()
+        precision, recall = compute_per_label_metrics(
+            confusion['tp'], confusion['fp'], confusion['fn'], self.num_classes
+        )
+        self.rs_test_precision.append(precision)
+        self.rs_test_recall.append(recall)
+
         print("Averaged Train Loss: {:.4f}".format(train_loss))
         print("Averaged Test Accurancy: {:.4f}".format(test_acc))
         print("Averaged Test AUC: {:.4f}".format(test_auc))
         print("Std Test Accurancy: {:.4f}".format(np.std(accs)))
         print("Std Test AUC: {:.4f}".format(np.std(aucs)))
+        self._print_rare_label_summary()
 

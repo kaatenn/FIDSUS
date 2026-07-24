@@ -7,6 +7,12 @@ import copy
 import time
 import random
 from utils.data_utils import read_client_data_un
+from utils.metrics_utils import (
+    new_confusion,
+    add_confusion,
+    compute_per_label_metrics,
+    get_rare_labels,
+)
 
 
 class Server(object):
@@ -41,6 +47,15 @@ class Server(object):
         self.rs_test_acc = []
         self.rs_test_auc = []
         self.rs_train_loss = []
+
+        # 逐标签 precision/recall 曲线（每轮一个长度为 num_classes 的数组）
+        self.rs_test_precision = []
+        self.rs_test_recall = []
+        # 少数标签列表（用于打印与汇总）
+        self.rare_labels = get_rare_labels(
+            self.dataset,
+            getattr(args, 'rare_target_labels', None),
+        )
 
         self.times = times
         self.eval_gap = args.eval_gap
@@ -157,6 +172,12 @@ class Server(object):
                 hf.create_dataset('rs_test_acc', data=self.rs_test_acc)
                 hf.create_dataset('rs_test_auc', data=self.rs_test_auc)
                 hf.create_dataset('rs_train_loss', data=self.rs_train_loss)
+                # 逐标签 precision / recall 曲线（形状: rounds × num_classes）
+                if self.rs_test_precision:
+                    hf.create_dataset('rs_test_precision', data=np.array(self.rs_test_precision))
+                    hf.create_dataset('rs_test_recall', data=np.array(self.rs_test_recall))
+                # 少数标签列表（便于下游汇总脚本识别）
+                hf.create_dataset('rare_labels', data=np.array(self.rare_labels, dtype=np.int64))
 
     def save_item(self, item, item_name):
         if not os.path.exists(self.save_folder_name):
@@ -182,7 +203,7 @@ class Server(object):
 
     def train_metrics(self):
 
-        
+
         num_samples = []
         losses = []
         for c in self.clients:
@@ -193,6 +214,19 @@ class Server(object):
         ids = [c.id for c in self.clients]
 
         return ids, num_samples, losses
+
+    def test_metrics_per_label(self):
+        """聚合所有客户端的逐标签混淆统计。
+
+        Returns:
+            confusion: dict with 'tp'/'fp'/'fn' numpy 数组（长度 num_classes）。
+        """
+        confusion = new_confusion(self.num_classes)
+        for c in self.clients:
+            if hasattr(c, 'test_metrics_per_label'):
+                _, _, _, cm = c.test_metrics_per_label()
+                confusion = add_confusion(confusion, cm)
+        return confusion
 
     # evaluate selected clients
     def evaluate(self, acc=None, loss=None):
@@ -215,12 +249,42 @@ class Server(object):
         else:
             loss.append(train_loss)
 
+        # 逐标签 precision / recall
+        self._record_per_label_metrics()
+
         print("Averaged Train Loss: {:.4f}".format(train_loss))
         print("Averaged Test Accurancy: {:.4f}".format(test_acc))
         print("Averaged Test AUC: {:.4f}".format(test_auc))
         # self.print_(test_acc, train_acc, train_loss)
         print("Std Test Accurancy: {:.4f}".format(np.std(accs)))
         print("Std Test AUC: {:.4f}".format(np.std(aucs)))
+        self._print_rare_label_summary()
+
+    def _record_per_label_metrics(self):
+        """计算并记录本轮所有标签的 precision/recall 到曲线数组。"""
+        confusion = self.test_metrics_per_label()
+        precision, recall = compute_per_label_metrics(
+            confusion['tp'], confusion['fp'], confusion['fn'], self.num_classes
+        )
+        self.rs_test_precision.append(precision)
+        self.rs_test_recall.append(recall)
+
+    def _print_rare_label_summary(self):
+        """打印少数标签的 precision/recall（若有定义）。"""
+        if not self.rare_labels:
+            return
+        if not self.rs_test_precision:
+            return
+        prec = self.rs_test_precision[-1]
+        rec = self.rs_test_recall[-1]
+        parts = []
+        for lbl in self.rare_labels:
+            if 0 <= lbl < self.num_classes:
+                parts.append(
+                    "label{}: P={:.4f} R={:.4f}".format(lbl, prec[lbl], rec[lbl])
+                )
+        if parts:
+            print("Rare labels | " + "  ".join(parts))
 
     def print_(self, test_acc, test_auc, train_loss):
         print("Average Test Accurancy: {:.4f}".format(test_acc))

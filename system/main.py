@@ -93,6 +93,14 @@ def run(args):
             args.model = BaseHeadSplit(args.model, args.head)
             server = FIDSUS(args, i)
 
+        elif args.algorithm == "FIDSUS_no_fusion":
+            # 消融实验：去掉 FIDSUS 的跨轮特征融合部分，其余保持一致
+            args.use_fusion = False
+            args.head = copy.deepcopy(args.model.fc)
+            args.model.fc = nn.Identity()
+            args.model = BaseHeadSplit(args.model, args.head)
+            server = FIDSUS(args, i)
+
         else:
             raise NotImplementedError
 
@@ -167,7 +175,18 @@ if __name__ == "__main__":
     parser.add_argument('-tau', "--tau", type=float, default=1.0)
     parser.add_argument('-mo', "--momentum", type=float, default=0.1)
     parser.add_argument('-klw', "--kl_weight", type=float, default=0.0)
+    parser.add_argument('-uf', "--use_fusion", type=lambda v: str(v).lower() in ("true", "1", "yes"),
+                        default=True,
+                        help="FIDSUS: 是否启用跨轮特征融合 (True/False)。False 即 FIDSUS_no_fusion 消融")
+    parser.add_argument('-rtl', "--rare_target_labels", type=str, default="",
+                        help="逗号分隔的少数标签列表，如 '2' 或 '8,4,1,2'；为空则按数据集自动选取")
     args = parser.parse_args()
+
+    # 解析少数标签列表
+    if args.rare_target_labels.strip():
+        args.rare_target_labels = [int(x) for x in args.rare_target_labels.split(',') if x.strip() != '']
+    else:
+        args.rare_target_labels = None
 
     os.environ["CUDA_VISIBLE_DEVICES"] = args.device_id
     if args.device == "cuda" and not torch.cuda.is_available():

@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/MoCFL.iml" filepath="$PROJECT_DIR$/.idea/MoCFL.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/FIDSUS.iml" filepath="$PROJECT_DIR$/.idea/FIDSUS.iml" />
     </modules>
   </component>
 </project>

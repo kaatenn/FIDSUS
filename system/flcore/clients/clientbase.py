@@ -8,6 +8,11 @@ from torch.utils.data import DataLoader
 from sklearn.preprocessing import label_binarize
 from sklearn import metrics
 from utils.data_utils import read_client_data_un
+from utils.metrics_utils import (
+    update_confusion_counts,
+    new_confusion,
+    compute_per_label_metrics,
+)
 
 
 class Client(object):
@@ -50,6 +55,9 @@ class Client(object):
             gamma=args.learning_rate_decay_gamma
         )
         self.learning_rate_decay = args.learning_rate_decay
+
+        # 跨轮特征融合开关（FIDSUS 消融用：False 时禁用 MMD 融合）
+        self.use_fusion = getattr(args, 'use_fusion', True)
 
 
     def load_train_data(self, batch_size=None):
@@ -111,6 +119,53 @@ class Client(object):
         auc = metrics.roc_auc_score(y_true, y_prob, average='micro')
 
         return test_acc, test_num, auc
+
+    def test_metrics_per_label(self):
+        """返回 (test_acc, test_num, auc, confusion)。
+
+        confusion 是逐标签 TP/FP/FN 的 dict，用于计算每个标签的 precision/recall。
+        """
+        testloaderfull = self.load_test_data()
+        self.model.eval()
+        test_acc = 0
+        test_num = 0
+        y_prob = []
+        y_true = []
+        confusion = new_confusion(self.num_classes)
+        with torch.no_grad():
+            for x, y in testloaderfull:
+                if type(x) == type([]):
+                    x[0] = x[0].to(self.device)
+                else:
+                    x = x.to(self.device)
+                y = y.to(self.device)
+                output = self.model(x)
+                preds = torch.argmax(output, dim=1)
+                test_acc += (torch.sum(preds == y)).item()
+                test_num += y.shape[0]
+                # 逐标签混淆统计
+                confusion = update_confusion_counts(
+                    confusion,
+                    y.detach().cpu().numpy(),
+                    preds.detach().cpu().numpy(),
+                    self.num_classes,
+                )
+                y_prob.append(output.detach().cpu().numpy())
+                nc = self.num_classes
+                if self.num_classes == 2:
+                    nc += 1
+                lb = label_binarize(y.detach().cpu().numpy(), classes=np.arange(nc))
+                if self.num_classes == 2:
+                    lb = lb[:, :2]
+                y_true.append(lb)
+        y_prob = np.concatenate(y_prob, axis=0)
+        y_true = np.concatenate(y_true, axis=0)
+        try:
+            auc = metrics.roc_auc_score(y_true, y_prob, average='micro')
+        except ValueError:
+            # 测试集只含单一类别时 roc_auc_score 会抛错，回退为 0.5
+            auc = 0.5
+        return test_acc, test_num, auc, confusion
 
     def train_metrics(self):
         trainloader = self.load_train_data()

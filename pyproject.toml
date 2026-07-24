@@ -23,6 +23,11 @@ dependencies = [
     "cvxpy",
 ]
 
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
+
 [[tool.uv.index]]
 name = "pytorch-cu118"
 url = "https://download.pytorch.org/whl/cu118"
