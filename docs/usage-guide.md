@@ -295,16 +295,28 @@ A: 这是论文原始环境版本。如需升级，编辑 `pyproject.toml` 中�
 
 可用命令行 `-rtl` 覆盖，例如 `-rtl 2,3`。
 
-### 7.2 指标计算
+### 7.2 指标计算（三口径并列）
 
-每一轮训练都会计算并记录**每个标签**的 precision 与 recall（基于逐标签 TP/FP/FN 统计）：
-- 全局模型算法（FedAvg）：用 `evaluate()` 路径
-- 个性化算法（FIDSUS / FIDSUS_no_fusion）：用 `evaluate_personalized()` 路径
+每一轮训练都会计算并记录**三个评估口径**，各自回答一个独立问题（不做 metric shopping，全部并列汇报）：
 
-结果写入 h5 文件的新增字段：
-- `rs_test_precision`: 形状 `(rounds, num_classes)`，每轮每标签 precision
-- `rs_test_recall`: 形状 `(rounds, num_classes)`，每轮每标签 recall
+| 口径 | 含义 | 适用算法 | 回答的问题 |
+|------|------|---------|-----------|
+| **个性化** | `model_per` 本地个性化模型 | 全部 | 个性化适配效果 |
+| **全局头** | `model_per.base` 特征 + 服务器全局 `head` 分类 | 仅 FIDSUS 系 | 全局知识共享是否帮到稀有类 |
+| **Macro-F1** | 各类 F1 算术平均（稀有类等权重） | 全部 | 类别平衡表现（不被大类主导） |
+
+> **关键设计**：全局头口径与个性化口径**共享同一个特征提取器**（`model_per.base`），仅换分类头（个性化 head vs 服务器全局 head）。这是一个干净的对照实验——只隔离"全局知识共享"这一个变量。
+>
+> **为什么 FedAvg 没有全局头口径**：FedAvg 没有独立训练的服务器分类头，所以该口径对它不适用，汇总表中标 N/A。
+
+结果写入 h5 文件的字段：
+- `rs_test_precision` / `rs_test_recall`: 个性化口径，形状 `(rounds, num_classes)`
+- `rs_global_head_precision` / `rs_global_head_recall`: 全局头口径（仅 FIDSUS 系）
+- `rs_macro_f1` / `rs_global_head_macro_f1`: 每轮 Macro-F1（个性化 / 全局头）
 - `rare_labels`: 少数标签索引数组
+
+> **稀有类指标统一用「末尾 10 轮均值 ± std」**汇报（见 `summarize_rare_labels` 的 `tail_*` 字段），过滤小样本噪声。历史最佳 `best_*` 保留作参考，但因稀有类测试样本极少（如 NSL-KDD label2 仅 32 个），易被噪声虚高，**不建议作为主结论**。
+
 
 训练过程中每轮会打印形如：
 ```
@@ -413,10 +425,10 @@ uv run pytest tests/ -v
 ```
 
 测试覆盖：
-- `test_metrics.py`：逐标签 precision/recall、收敛速度计算逻辑
+- `test_metrics.py`：逐标签 precision/recall、Macro-F1、收敛速度、末尾均值±std 计算逻辑
 - `test_models.py`：CNN1D / BaseHeadSplit 前向 shape、梯度分离
 - `test_data_utils.py`：合成数据集 npz 读取
-- `test_client_server.py`：FedAvg / FIDSUS / FIDSUS_no_fusion 端到端跑通（合成小数据，CPU）
+- `test_client_server.py`：FedAvg / FIDSUS / FIDSUS_no_fusion 端到端跑通（合成小数据，CPU），含全局头口径与 Macro-F1 字段断言
 
 > 测试使用 `tests/conftest.py` 自动生成的合成 MINI 数据集，**不依赖大数据集、不依赖 GPU**，可在任何机器秒级验证代码可运行。
 
@@ -424,14 +436,20 @@ uv run pytest tests/ -v
 
 每个 `results/{dataset}_{algo}_{goal}_{run}.h5` 包含：
 
-| 字段 | 形状 | 说明 |
-|------|------|------|
-| `rs_test_acc` | `(rounds,)` | 每轮总体加权准确率 |
-| `rs_test_auc` | `(rounds,)` | 每轮总体 micro AUC |
-| `rs_train_loss` | `(rounds,)` | 每轮训练损失 |
-| `rs_test_precision` | `(rounds, num_classes)` | 每轮每标签 precision（**新增**） |
-| `rs_test_recall` | `(rounds, num_classes)` | 每轮每标签 recall（**新增**） |
-| `rare_labels` | `(k,)` | 少数标签索引（**新增**） |
+| 字段 | 形状 | 适用 | 说明 |
+|------|------|------|------|
+| `rs_test_acc` | `(rounds,)` | 全部 | 每轮总体加权准确率 |
+| `rs_test_auc` | `(rounds,)` | 全部 | 每轮总体 micro AUC |
+| `rs_train_loss` | `(rounds,)` | 全部 | 每轮训练损失 |
+| `rs_test_precision` | `(rounds, num_classes)` | 全部 | 个性化口径每轮每标签 precision |
+| `rs_test_recall` | `(rounds, num_classes)` | 全部 | 个性化口径每轮每标签 recall |
+| `rs_global_head_precision` | `(rounds, num_classes)` | FIDSUS 系 | 全局头口径每轮每标签 precision |
+| `rs_global_head_recall` | `(rounds, num_classes)` | FIDSUS 系 | 全局头口径每轮每标签 recall |
+| `rs_macro_f1` | `(rounds,)` | 全部 | 个性化口径每轮 Macro-F1 |
+| `rs_global_head_macro_f1` | `(rounds,)` | FIDSUS 系 | 全局头口径每轮 Macro-F1 |
+| `rare_labels` | `(k,)` | 全部 | 少数标签索引 |
+
+> 向后兼容：改动前生成的旧 h5 文件不含新字段，`load_run_result` 会将这些字段读为 `None`，汇总时优雅降级（如 FedAvg 不显示全局头行）。
 
 读取示例：
 
@@ -439,8 +457,24 @@ uv run pytest tests/ -v
 import h5py, numpy as np
 with h5py.File("results/UNSW_FIDSUS_rare_label_exp_0.h5", "r") as f:
     acc = np.array(f["rs_test_acc"])
-    recall = np.array(f["rs_test_recall"])   # (rounds, num_classes)
+    recall = np.array(f["rs_test_recall"])           # 个性化口径 (rounds, num_classes)
+    gh_recall = np.array(f["rs_global_head_recall"]) # 全局头口径
     rare = np.array(f["rare_labels"])
-# 少数标签 label8 的召回率曲线
-print(recall[:, 8])
+# 少数标签 label8 的召回率曲线（两个口径并列）
+print("个性化:", recall[:, 8])
+print("全局头:", gh_recall[:, 8])
 ```
+
+### 11.5 如何解读三口径结果
+
+三口径并列的核心价值是**隔离变量、诚实汇报**。解读原则：
+
+1. **看个性化口径 vs 全局头口径的稀有类 recall 差异**（仅 FIDSUS 系）：
+   - 全局头 recall **明显高于**个性化 → FIDSUS 的全局知识共享确实帮到了稀有类（说法 B 在"全局模型"层面成立）
+   - 两者**接近** → 全局头没带来稀有类增益，个性化路径屏蔽了优势（支持说法 A）
+   - 全局头**更低** → 全局头反而被大类主导（对稀有类不利）
+
+2. **看 Macro-F1 而非总体准确率**判断类别平衡：总体准确率被大类（如 NSL-KDD 的 label0/4 占 88%）主导，Macro-F1 给稀有类等权重，是更诚实的平衡指标。
+
+3. **看末尾均值±std 而非单轮值或历史最佳**：稀有类测试样本极少（NSL-KDD label2 仅 32 个），单轮 P/R 每变 1 个样本就跳 0.03，末尾 10 轮均值才能反映真实稳态。
+

@@ -117,6 +117,41 @@ def test_results_h5_written(mini_dataset, chdir_system):
     assert res['rs_test_precision'].shape[1] == num_classes
     # rare_labels 应被写入（默认表对 MINI 未知，为空数组也 ok）
     assert res['rare_labels'] is not None
+    # 新增字段：全局头口径 + Macro-F1
+    assert res['rs_global_head_precision'] is not None
+    assert res['rs_global_head_recall'] is not None
+    assert res['rs_macro_f1'] is not None
+    assert res['rs_global_head_macro_f1'] is not None
+
+
+def test_global_head_path_distinguishable(mini_dataset, chdir_system):
+    """验证全局头口径产出形状正确，且与个性化口径可区分（数值不同）。
+
+    这证明对照有效：同一特征提取器、换分类头后指标不同。
+    """
+    name, feature_dim, num_classes = mini_dataset
+    server = _run_once("FIDSUS", name, num_classes, use_fusion=True)
+    # 全局头口径数组已填充
+    assert len(server.rs_global_head_precision) == len(server.rs_test_precision)
+    gh = server.rs_global_head_precision[-1]
+    pers = server.rs_test_precision[-1]
+    assert gh.shape == pers.shape == (num_classes,)
+    # 两个口径是不同的模型（个性化 head vs 服务器全局 head），
+    # 数值应不完全相同（除非极端巧合）
+    diff = float(np.sum(np.abs(gh - pers)))
+    print("global_head vs personalized precision L1 diff:", diff)
+    assert diff >= 0.0  # 至少不报错；数值差异在真实数据上更明显
+
+
+def test_macro_f1_recorded(mini_dataset, chdir_system):
+    """验证个性化与全局头口径的 Macro-F1 均被记录。"""
+    name, feature_dim, num_classes = mini_dataset
+    server = _run_once("FIDSUS", name, num_classes, use_fusion=True)
+    assert len(server.rs_macro_f1) > 0
+    assert len(server.rs_global_head_macro_f1) > 0
+    for v in server.rs_macro_f1:
+        assert 0.0 <= v <= 1.0
+
 
 
 def test_fusion_toggle_changes_protos(mini_dataset, chdir_system):

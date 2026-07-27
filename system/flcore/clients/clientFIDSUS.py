@@ -250,6 +250,56 @@ class clientFIDSUS(Client):
             auc = 0.5
         return test_acc, test_num, auc, confusion
 
+    def test_metrics_global_head_per_label(self, head):
+        """全局分类头评估口径。
+
+        用 model_per.base（个性化分支特征提取器）计算测试集特征，
+        再喂给服务器下发的全局 head 做分类。与个性化评估口径共享同一
+        特征提取器，仅换分类头（个性化 head vs 全局 head），干净隔离
+        “全局知识共享”这一变量。
+
+        Args:
+            head: 服务器端训练好的全局分类头（nn.Linear(64, num_classes)）。
+
+        Returns:
+            (test_acc, test_num, auc, confusion)，与 test_metrics_personalized_per_label 同签名。
+        """
+        testloaderfull = self.load_test_data()
+        self.model_per.eval()
+        test_acc = 0
+        test_num = 0
+        y_prob = []
+        y_true = []
+        confusion = new_confusion(self.num_classes)
+        with torch.no_grad():
+            for x, y in testloaderfull:
+                if type(x) == type([]):
+                    x[0] = x[0].to(self.device)
+                else:
+                    x = x.to(self.device)
+                y = y.to(self.device)
+                # 个性化分支特征提取器 → 全局 head 分类
+                feat = self.model_per.base(x)
+                output = head(feat)
+                preds = torch.argmax(output, dim=1)
+                test_acc += (torch.sum(preds == y)).item()
+                test_num += y.shape[0]
+                confusion = update_confusion_counts(
+                    confusion,
+                    y.detach().cpu().numpy(),
+                    preds.detach().cpu().numpy(),
+                    self.num_classes,
+                )
+                y_prob.append(F.softmax(output).detach().cpu().numpy())
+                y_true.append(label_binarize(y.detach().cpu().numpy(), classes=np.arange(self.num_classes)))
+        y_prob = np.concatenate(y_prob, axis=0)
+        y_true = np.concatenate(y_true, axis=0)
+        try:
+            auc = metrics.roc_auc_score(y_true, y_prob, average='micro')
+        except ValueError:
+            auc = 0.5
+        return test_acc, test_num, auc, confusion
+
 
 def MMD(x, y, kernel, device='cpu'):
     xx = torch.mm(x.unsqueeze(1), x.unsqueeze(0))

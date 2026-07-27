@@ -12,6 +12,8 @@ from utils.metrics_utils import (
     new_confusion,
     add_confusion,
     compute_convergence_speed,
+    compute_macro_f1,
+    tail_mean_std,
     get_rare_labels,
 )
 
@@ -84,3 +86,37 @@ def test_get_rare_labels():
     assert get_rare_labels("UNSW", override=[]) == [8, 4, 1, 2]
     # 未知数据集
     assert get_rare_labels("UNKNOWN") == []
+
+
+def test_compute_macro_f1():
+    # label0: P=1,R=0.5 -> F1=2*1*.5/1.5=0.6667
+    # label1: P=0.5,R=0.5 -> F1=0.5
+    # label2: P=0,R=0 -> F1=0 (P+R=0)
+    # macro = (0.6667+0.5+0)/3 = 0.3889
+    p = np.array([1.0, 0.5, 0.0])
+    r = np.array([0.5, 0.5, 0.0])
+    f1 = compute_macro_f1(p, r)
+    assert abs(f1 - 0.3889) < 1e-3
+
+
+def test_compute_macro_f1_perfect():
+    p = np.array([1.0, 1.0, 1.0])
+    r = np.array([1.0, 1.0, 1.0])
+    assert abs(compute_macro_f1(p, r) - 1.0) < 1e-9
+
+
+def test_tail_mean_std():
+    curve = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    m, s = tail_mean_std(curve, tail=3)
+    assert abs(m - 0.9) < 1e-9  # 末 3 个: 0.8,0.9,1.0 -> mean=0.9
+    assert s > 0
+    # 短于 tail 时取全部
+    m2, s2 = tail_mean_std([0.5, 0.7], tail=10)
+    assert abs(m2 - 0.6) < 1e-9
+
+
+def test_tail_mean_std_empty():
+    m, s = tail_mean_std([])
+    assert m != m  # nan
+    assert s != s  # nan
+

@@ -11,6 +11,7 @@ from utils.metrics_utils import (
     new_confusion,
     add_confusion,
     compute_per_label_metrics,
+    compute_macro_f1,
 )
 
 import torch.nn as nn
@@ -142,6 +143,18 @@ class FIDSUS(Server):
                 confusion = add_confusion(confusion, cm)
         return confusion
 
+    def test_metrics_global_head_per_label(self):
+        """聚合所有客户端在「全局分类头」口径下的逐标签混淆统计。
+
+        用 model_per.base 算特征 → 服务器全局 self.head 分类。
+        """
+        confusion = new_confusion(self.num_classes)
+        for c in self.clients:
+            if hasattr(c, 'test_metrics_global_head_per_label'):
+                _, _, _, cm = c.test_metrics_global_head_per_label(self.head)
+                confusion = add_confusion(confusion, cm)
+        return confusion
+
     def evaluate_personalized(self, acc=None, loss=None):
         stats = self.test_metrics_personalized()
         stats_train = self.train_metrics_personalized()
@@ -159,13 +172,24 @@ class FIDSUS(Server):
         else:
             loss.append(train_loss)
 
-        # 逐标签 precision / recall
+        # 个性化口径：逐标签 precision / recall + Macro-F1
         confusion = self.test_metrics_personalized_per_label()
         precision, recall = compute_per_label_metrics(
             confusion['tp'], confusion['fp'], confusion['fn'], self.num_classes
         )
         self.rs_test_precision.append(precision)
         self.rs_test_recall.append(recall)
+        self.rs_macro_f1.append(compute_macro_f1(precision, recall))
+
+        # 全局分类头口径：逐标签 precision / recall + Macro-F1
+        # （与个性化口径共享 model_per.base 特征提取器，仅换分类头）
+        gh_confusion = self.test_metrics_global_head_per_label()
+        gh_precision, gh_recall = compute_per_label_metrics(
+            gh_confusion['tp'], gh_confusion['fp'], gh_confusion['fn'], self.num_classes
+        )
+        self.rs_global_head_precision.append(gh_precision)
+        self.rs_global_head_recall.append(gh_recall)
+        self.rs_global_head_macro_f1.append(compute_macro_f1(gh_precision, gh_recall))
 
         print("Averaged Train Loss: {:.4f}".format(train_loss))
         print("Averaged Test Accurancy: {:.4f}".format(test_acc))
@@ -173,4 +197,5 @@ class FIDSUS(Server):
         print("Std Test Accurancy: {:.4f}".format(np.std(accs)))
         print("Std Test AUC: {:.4f}".format(np.std(aucs)))
         self._print_rare_label_summary()
+        self._print_rare_label_summary_global_head()
 

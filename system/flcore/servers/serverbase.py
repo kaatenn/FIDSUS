@@ -11,6 +11,7 @@ from utils.metrics_utils import (
     new_confusion,
     add_confusion,
     compute_per_label_metrics,
+    compute_macro_f1,
     get_rare_labels,
 )
 
@@ -51,6 +52,12 @@ class Server(object):
         # 逐标签 precision/recall 曲线（每轮一个长度为 num_classes 的数组）
         self.rs_test_precision = []
         self.rs_test_recall = []
+        # 全局分类头评估口径的逐标签 precision/recall（仅 FIDSUS 系算法填充）
+        self.rs_global_head_precision = []
+        self.rs_global_head_recall = []
+        # 每轮 Macro-F1（个性化口径 与 全局头口径）
+        self.rs_macro_f1 = []
+        self.rs_global_head_macro_f1 = []
         # 少数标签列表（用于打印与汇总）
         self.rare_labels = get_rare_labels(
             self.dataset,
@@ -176,6 +183,19 @@ class Server(object):
                 if self.rs_test_precision:
                     hf.create_dataset('rs_test_precision', data=np.array(self.rs_test_precision))
                     hf.create_dataset('rs_test_recall', data=np.array(self.rs_test_recall))
+                # 全局分类头口径的逐标签 precision / recall（仅 FIDSUS 系算法）
+                if self.rs_global_head_precision:
+                    hf.create_dataset('rs_global_head_precision',
+                                      data=np.array(self.rs_global_head_precision))
+                    hf.create_dataset('rs_global_head_recall',
+                                      data=np.array(self.rs_global_head_recall))
+                # 每轮 Macro-F1（个性化口径）
+                if self.rs_macro_f1:
+                    hf.create_dataset('rs_macro_f1', data=np.array(self.rs_macro_f1))
+                # 每轮 Macro-F1（全局头口径，仅 FIDSUS 系算法）
+                if self.rs_global_head_macro_f1:
+                    hf.create_dataset('rs_global_head_macro_f1',
+                                      data=np.array(self.rs_global_head_macro_f1))
                 # 少数标签列表（便于下游汇总脚本识别）
                 hf.create_dataset('rare_labels', data=np.array(self.rare_labels, dtype=np.int64))
 
@@ -261,13 +281,14 @@ class Server(object):
         self._print_rare_label_summary()
 
     def _record_per_label_metrics(self):
-        """计算并记录本轮所有标签的 precision/recall 到曲线数组。"""
+        """计算并记录本轮所有标签的 precision/recall 与 Macro-F1 到曲线数组。"""
         confusion = self.test_metrics_per_label()
         precision, recall = compute_per_label_metrics(
             confusion['tp'], confusion['fp'], confusion['fn'], self.num_classes
         )
         self.rs_test_precision.append(precision)
         self.rs_test_recall.append(recall)
+        self.rs_macro_f1.append(compute_macro_f1(precision, recall))
 
     def _print_rare_label_summary(self):
         """打印少数标签的 precision/recall（若有定义）。"""
@@ -285,6 +306,23 @@ class Server(object):
                 )
         if parts:
             print("Rare labels | " + "  ".join(parts))
+
+    def _print_rare_label_summary_global_head(self):
+        """打印少数标签在「全局分类头」口径下的 precision/recall（仅 FIDSUS 系）。"""
+        if not self.rare_labels:
+            return
+        if not self.rs_global_head_precision:
+            return
+        prec = self.rs_global_head_precision[-1]
+        rec = self.rs_global_head_recall[-1]
+        parts = []
+        for lbl in self.rare_labels:
+            if 0 <= lbl < self.num_classes:
+                parts.append(
+                    "label{}: P={:.4f} R={:.4f}".format(lbl, prec[lbl], rec[lbl])
+                )
+        if parts:
+            print("Rare labels (global head) | " + "  ".join(parts))
 
     def print_(self, test_acc, test_auc, train_loss):
         print("Average Test Accurancy: {:.4f}".format(test_acc))

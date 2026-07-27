@@ -11,27 +11,21 @@ The dynamic nature of UAV swarms, characterized by communication instability, he
 
 This project requires the following dependencies to be installed:
 
-### Packages
+### Packages (runtime)
 
-The following packages are required:
+Only what `system/` actually imports at runtime:
 
-- `pandas`
-- `scikit-learn`
-- `scipy`
-- `ujson`
+- `torch` (CUDA build for GPU; see GPU notes below)
+- `numpy`
 - `h5py`
-- `seaborn`
-- `matplotlib`
+- `scikit-learn`
 
-- `torch==2.0.1`
-- `torchaudio`
-- `torchtext`
-- `torchvision`
-- `calmsize`
-- `memory-profiler`
-- `opacus`
-- `portalocker`
-- `cvxpy`
+Test deps (`uv sync --group dev`): `pytest`.
+Dataset (re)generation (`uv sync --group dataset`): `ujson`.
+
+> The legacy `env.yaml` listed many unused packages (pandas, torchaudio, torchtext,
+> torchvision, opacus, cvxpy, ...). They are **not** imported by the codebase and
+> have been removed from `pyproject.toml`.
 
 ### Installation (uv, recommended)
 
@@ -41,6 +35,21 @@ This project is managed with [uv](https://docs.astral.sh/uv/):
 uv sync            # 安装运行依赖
 uv sync --group dev  # 额外安装测试依赖 (pytest)
 ```
+
+### GPU notes (Pascal / sm_61 GPUs like GT 1030)
+
+`pyproject.toml` locks `torch>=2.6,<2.7` from the **cu118** index because
+PyTorch 2.7+ dropped support for Pascal (sm_61) GPUs. The cu118 wheels of 2.6.x
+are the last builds that still include sm_61 binaries. A one-command Windows
+script is provided:
+
+```bat
+run_gpu.bat            REM 完整实验 (100 轮)
+run_gpu.bat --quick    REM 快速验证 GPU 是否可用
+```
+
+If you upgrade to a newer GPU (sm_75+), relax the constraint to `torch>=2.6`
+and switch the index to cu126/cu128 in `pyproject.toml`.
 
 ### Installation (Conda, legacy)
 

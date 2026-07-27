@@ -146,6 +146,45 @@ def compute_convergence_speed(acc_list, threshold_ratio=0.9, tail=10):
     }
 
 
+def tail_mean_std(curve, tail=10):
+    """计算一条曲线末尾 tail 个点的均值与标准差。
+
+    用于稀有类指标的降噪：单轮 P/R 在小样本(如 32 个测试样本)上方差极大，
+    末尾均值能反映稳态真实水平。
+
+    Args:
+        curve: 一维序列（list 或 1D 数组），如某标签逐轮 recall。
+        tail: 取末尾 N 个点，默认 10。
+
+    Returns:
+        (mean, std)；曲线为空时返回 (nan, nan)。
+    """
+    arr = np.asarray(curve, dtype=np.float64).reshape(-1)
+    if len(arr) == 0:
+        return float('nan'), float('nan')
+    tail_arr = arr[-tail:] if len(arr) >= tail else arr
+    return float(np.mean(tail_arr)), float(np.std(tail_arr))
+
+
+def compute_macro_f1(precision, recall):
+    """计算宏平均 F1（各类 F1 的算术平均，对稀有类等权重）。
+
+    Args:
+        precision: 各标签 precision（1D 数组）。
+        recall: 各标签 recall（1D 数组）。
+
+    Returns:
+        float: macro-F1。当 P+R=0 时该类 F1 记为 0。
+    """
+    precision = np.asarray(precision, dtype=np.float64).reshape(-1)
+    recall = np.asarray(recall, dtype=np.float64).reshape(-1)
+    denom = precision + recall
+    f1 = np.zeros_like(precision)
+    mask = denom > 0
+    f1[mask] = 2.0 * precision[mask] * recall[mask] / denom[mask]
+    return float(np.mean(f1))
+
+
 # 各数据集的"少数标签"参考（基于全局训练样本量统计）。
 # 可在运行时通过命令行 --rare_target_labels 覆盖。
 RARE_LABELS = {

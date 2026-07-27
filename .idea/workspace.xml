@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="3e1367aa-df57-4438-8685-cb46f10425d1" name="更改" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/deployment.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
+    <list default="true" id="3e1367aa-df57-4438-8685-cb46f10425d1" name="更改" comment="motivation 实验">
+      <change beforePath="$PROJECT_DIR$/.idea/FIDSUS.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/FIDSUS.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.zcode/plans/plan-sess_2e8e7a7c-3b23-43ba-93c9-11511f30625f.md" beforeDir="false" afterPath="$PROJECT_DIR$/.zcode/plans/plan-sess_2e8e7a7c-3b23-43ba-93c9-11511f30625f.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/docs/usage-guide.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/usage-guide.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/pyproject.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/run_experiments.sh" beforeDir="false" afterPath="$PROJECT_DIR$/run_experiments.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/system/flcore/clients/clientFIDSUS.py" beforeDir="false" afterPath="$PROJECT_DIR$/system/flcore/clients/clientFIDSUS.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/system/flcore/clients/clientbase.py" beforeDir="false" afterPath="$PROJECT_DIR$/system/flcore/clients/clientbase.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/system/flcore/servers/FIDSUS.py" beforeDir="false" afterPath="$PROJECT_DIR$/system/flcore/servers/FIDSUS.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/system/flcore/servers/serverbase.py" beforeDir="false" afterPath="$PROJECT_DIR$/system/flcore/servers/serverbase.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/system/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/system/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/system/run_all.py" beforeDir="false" afterPath="$PROJECT_DIR$/system/run_all.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/system/utils/metrics_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/system/utils/metrics_utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/system/utils/result_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/system/utils/result_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_client_server.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_client_server.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_metrics.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_metrics.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/uv.lock" beforeDir="false" afterPath="$PROJECT_DIR$/uv.lock" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -80,8 +80,17 @@
       <option name="presentableId" value="Default" />
       <updated>1784859368431</updated>
       <workItem from="1784859371370" duration="91000" />
-      <workItem from="1784860719119" duration="298000" />
+      <workItem from="1784860719119" duration="6808000" />
     </task>
+    <task id="LOCAL-00001" summary="motivation 实验">
+      <option name="closed" value="true" />
+      <created>1784861056797</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1784861056797</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -98,7 +107,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="fork/audit" />
+                        <option value="motivation" />
                       </list>
                     </value>
                   </entry>
@@ -109,5 +118,9 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="motivation 实验" />
+    <option name="LAST_COMMIT_MESSAGE" value="motivation 实验" />
   </component>
 </project>

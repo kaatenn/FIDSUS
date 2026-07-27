@@ -67,45 +67,83 @@ def run_experiment(algo, dataset, num_classes, global_rounds, num_clients,
 
 
 def summarize(datasets, algos, goal, times, results_dir):
-    """读取所有运行结果，打印汇总表并写 CSV。"""
-    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from utils.result_utils import load_run_result
-    from utils.metrics_utils import compute_convergence_speed
+    """读取所有运行结果，打印三口径并列汇总表并写 CSV。
 
-    rows = []
+    三口径：
+      1. 个性化口径 (personalized)：model_per 本地模型
+      2. 全局分类头口径 (global head)：model_per.base 特征 + 服务器全局 head
+      3. Macro-F1：类别平衡指标
+    稀有类一律用「末尾 10 轮均值±std」，过滤小样本噪声。
+    """
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from utils.result_utils import summarize_rare_labels
+
+    summaries = []
     for dataset in datasets:
-        num_classes = DATASET_NUM_CLASSES.get(dataset, 10)
         for algo in algos:
             for t in range(times):
-                res = load_run_result(dataset, algo, goal, time_idx=t,
-                                      results_dir=results_dir)
-                acc = res['rs_test_acc']
-                if acc is None or len(acc) == 0:
+                s = summarize_rare_labels(dataset, algo, goal, time_idx=t,
+                                          results_dir=results_dir)
+                if s['convergence'] is None:
                     continue
-                conv = compute_convergence_speed(acc)
-                rare = res['rare_labels']
-                rare = list(rare.astype(int)) if rare is not None else []
-                prec = res['rs_test_precision']
-                rec = res['rs_test_recall']
-                row = {
-                    "dataset": dataset,
-                    "algo": algo,
-                    "run": t,
-                    "best_acc": round(conv['best_acc'], 4),
-                    "converge_round": conv['converge_round'],
-                    "tail_std": round(conv['tail_std'], 4),
-                }
-                if prec is not None and rec is not None and len(rare) > 0:
-                    for lbl in rare:
-                        row["P_label{}".format(lbl)] = round(float(prec[-1, lbl]), 4)
-                        row["R_label{}".format(lbl)] = round(float(rec[-1, lbl]), 4)
-                rows.append(row)
+                s['dataset'] = dataset
+                s['algo'] = algo
+                s['run'] = t
+                summaries.append(s)
 
-    if not rows:
+    if not summaries:
         print("\n[summary] 没有找到结果文件。请确认实验已运行。")
         return
 
-    # 写 CSV
+    # ---- 打印三口径并列表 ----
+    print("\n" + "=" * 78)
+    print("实验汇总（三口径并列：个性化 / 全局头 / Macro-F1）")
+    print("稀有类指标为末尾 10 轮均值±std（过滤小样本噪声）")
+    print("=" * 78)
+    for s in summaries:
+        conv = s['convergence']
+        print("\n[{} / {} / run{}]".format(s["dataset"], s["algo"], s["run"]))
+        print("  总体: Best Acc = {:.4f} | 收敛轮次 = {} | 末尾 std = {:.4f}".format(
+            conv['best_acc'], conv['converge_round'], conv['tail_std']))
+        print("  Macro-F1 (个性化):    {:.4f}".format(
+            _fmt(s.get('macro_f1_tail'))))
+        if s.get('global_head_macro_f1_tail') is not None:
+            print("  Macro-F1 (全局头):    {:.4f}".format(
+                _fmt(s.get('global_head_macro_f1_tail'))))
+        for lbl in s['rare_labels']:
+            pm = s['tail_precision_mean'].get(lbl, float('nan'))
+            rm = s['tail_recall_mean'].get(lbl, float('nan'))
+            rs = s['tail_recall_std'].get(lbl, float('nan'))
+            print("  label{} 个性化   R = {:.4f} ± {:.4f} | P = {:.4f}".format(
+                lbl, rm, rs, pm))
+            if lbl in s.get('global_head_tail_recall_mean', {}):
+                grm = s['global_head_tail_recall_mean'].get(lbl, float('nan'))
+                grs = s['global_head_tail_recall_std'].get(lbl, float('nan'))
+                print("  label{} 全局头   R = {:.4f} ± {:.4f}".format(lbl, grm, grs))
+
+    # ---- 写 CSV（扁平化所有字段）----
+    rows = []
+    for s in summaries:
+        conv = s['convergence']
+        row = {
+            "dataset": s["dataset"],
+            "algo": s["algo"],
+            "run": s["run"],
+            "best_acc": round(conv['best_acc'], 4),
+            "converge_round": conv['converge_round'],
+            "tail_std": round(conv['tail_std'], 4),
+            "macro_f1_tail": _fmt(s.get('macro_f1_tail')),
+            "global_head_macro_f1_tail": _fmt(s.get('global_head_macro_f1_tail')),
+        }
+        for lbl in s['rare_labels']:
+            row["pers_R{}_tail_mean".format(lbl)] = round(_fmt(s['tail_recall_mean'].get(lbl)), 4)
+            row["pers_R{}_tail_std".format(lbl)] = round(_fmt(s['tail_recall_std'].get(lbl)), 4)
+            row["pers_P{}_tail_mean".format(lbl)] = round(_fmt(s['tail_precision_mean'].get(lbl)), 4)
+            if lbl in s.get('global_head_tail_recall_mean', {}):
+                row["gh_R{}_tail_mean".format(lbl)] = round(_fmt(s['global_head_tail_recall_mean'].get(lbl)), 4)
+                row["gh_R{}_tail_std".format(lbl)] = round(_fmt(s['global_head_tail_recall_std'].get(lbl)), 4)
+        rows.append(row)
+
     csv_path = os.path.join(results_dir, "summary.csv")
     all_keys = []
     for r in rows:
@@ -119,31 +157,30 @@ def summarize(datasets, algos, goal, times, results_dir):
             f.write(",".join(str(r.get(k, "")) for k in all_keys) + "\n")
     print("\n汇总已写入: {}".format(csv_path))
 
-    # 打印表格
-    print("\n" + "=" * 70)
-    print("实验汇总（少数标签 precision/recall + 收敛速度）")
-    print("=" * 70)
-    for r in rows:
-        rare_p = {k: v for k, v in r.items() if k.startswith("P_label")}
-        rare_r = {k: v for k, v in r.items() if k.startswith("R_label")}
-        print("\n[{} / {} / run{}]".format(r["dataset"], r["algo"], r["run"]))
-        print("  Best Acc = {}  | 收敛轮次 = {}  | 末尾 std = {}".format(
-            r["best_acc"], r["converge_round"], r["tail_std"]))
-        if rare_p:
-            print("  少数标签 Precision:", rare_p)
-            print("  少数标签 Recall:   ", rare_r)
-
-    # 收敛速度对比（需求 4）
-    print("\n" + "-" * 70)
+    # ---- 收敛速度对比（需求 4）----
+    print("\n" + "-" * 78)
     print("收敛速度对比 (FIDSUS vs FIDSUS_no_fusion)")
-    print("-" * 70)
+    print("-" * 78)
     for dataset in datasets:
         for algo in ["FIDSUS", "FIDSUS_no_fusion"]:
-            matches = [r for r in rows if r["dataset"] == dataset and r["algo"] == algo]
+            matches = [s for s in summaries if s["dataset"] == dataset and s["algo"] == algo]
             if matches:
-                r = matches[0]
-                print("  {:<18} on {:<8}: best_acc={} converge_round={} tail_std={}".format(
-                    algo, dataset, r["best_acc"], r["converge_round"], r["tail_std"]))
+                s = matches[0]
+                conv = s['convergence']
+                print("  {:<18} on {:<8}: best_acc={:.4f} converge_round={} tail_std={:.4f}".format(
+                    algo, dataset, conv['best_acc'], conv['converge_round'], conv['tail_std']))
+
+
+def _fmt(v):
+    """None / nan -> 0.0 的辅助，便于格式化与 CSV。"""
+    if v is None:
+        return 0.0
+    try:
+        if v != v:  # nan
+            return 0.0
+        return float(v)
+    except (TypeError, ValueError):
+        return 0.0
 
 
 def main():
