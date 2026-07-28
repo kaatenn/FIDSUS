@@ -1,23 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="3e1367aa-df57-4438-8685-cb46f10425d1" name="更改" comment="motivation 实验">
-      <change beforePath="$PROJECT_DIR$/.idea/FIDSUS.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/FIDSUS.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="3e1367aa-df57-4438-8685-cb46f10425d1" name="更改" comment="优化指标">
+      <change afterPath="$PROJECT_DIR$/docs/NeurIPS-2024-heterogeneity-guided-client-sampling-towards-fast-and-efficient-non-iid-federated-learning-Paper-Conference.pdf" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.zcode/plans/plan-sess_2e8e7a7c-3b23-43ba-93c9-11511f30625f.md" beforeDir="false" afterPath="$PROJECT_DIR$/.zcode/plans/plan-sess_2e8e7a7c-3b23-43ba-93c9-11511f30625f.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/usage-guide.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/usage-guide.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/pyproject.toml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/run_experiments.sh" beforeDir="false" afterPath="$PROJECT_DIR$/run_experiments.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/system/flcore/clients/clientFIDSUS.py" beforeDir="false" afterPath="$PROJECT_DIR$/system/flcore/clients/clientFIDSUS.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/system/flcore/servers/FIDSUS.py" beforeDir="false" afterPath="$PROJECT_DIR$/system/flcore/servers/FIDSUS.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/system/flcore/servers/serverbase.py" beforeDir="false" afterPath="$PROJECT_DIR$/system/flcore/servers/serverbase.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/system/run_all.py" beforeDir="false" afterPath="$PROJECT_DIR$/system/run_all.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/system/utils/metrics_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/system/utils/metrics_utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/system/utils/result_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/system/utils/result_utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_client_server.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_client_server.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_metrics.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_metrics.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/run_gpu.bat" beforeDir="false" afterPath="$PROJECT_DIR$/run_gpu.bat" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/uv.lock" beforeDir="false" afterPath="$PROJECT_DIR$/uv.lock" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -53,6 +43,13 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "NIXITCH_NIXPKGS_CONFIG": "",
+    "NIXITCH_NIX_CONF_DIR": "",
+    "NIXITCH_NIX_OTHER_STORES": "",
+    "NIXITCH_NIX_PATH": "",
+    "NIXITCH_NIX_PROFILES": "",
+    "NIXITCH_NIX_REMOTE": "",
+    "NIXITCH_NIX_USER_PROFILE_DIR": "",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
@@ -60,10 +57,16 @@
     "codeWithMe.voiceChat.enabledByDefault": "false",
     "git-widget-placeholder": "motivation",
     "git.auto.fetch.suggestion.counter": "1",
+    "last_opened_file_path": "D:/work/code/FIDSUS/docs",
     "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "com.github.copilot.settings.keymap.KeymapConfigurable"
+    "settings.editor.selected.configurable": "preferences.pluginManager"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\work\code\FIDSUS\docs" />
+    </key>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -80,7 +83,8 @@
       <option name="presentableId" value="Default" />
       <updated>1784859368431</updated>
       <workItem from="1784859371370" duration="91000" />
-      <workItem from="1784860719119" duration="6808000" />
+      <workItem from="1784860719119" duration="12227000" />
+      <workItem from="1785219686451" duration="1534000" />
     </task>
     <task id="LOCAL-00001" summary="motivation 实验">
       <option name="closed" value="true" />
@@ -90,7 +94,15 @@
       <option name="project" value="LOCAL" />
       <updated>1784861056797</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="优化指标">
+      <option name="closed" value="true" />
+      <created>1785126635196</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1785126635196</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -121,6 +133,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="motivation 实验" />
-    <option name="LAST_COMMIT_MESSAGE" value="motivation 实验" />
+    <MESSAGE value="优化指标" />
+    <option name="LAST_COMMIT_MESSAGE" value="优化指标" />
   </component>
 </project>

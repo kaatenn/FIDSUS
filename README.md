@@ -32,24 +32,45 @@ Dataset (re)generation (`uv sync --group dataset`): `ujson`.
 This project is managed with [uv](https://docs.astral.sh/uv/):
 
 ```bash
-uv sync            # 安装运行依赖
-uv sync --group dev  # 额外安装测试依赖 (pytest)
+uv sync --group dev   # 安装运行依赖 + 测试依赖
 ```
 
-### GPU notes (Pascal / sm_61 GPUs like GT 1030)
+### GPU support (auto-detected)
 
-`pyproject.toml` locks `torch>=2.6,<2.7` from the **cu118** index because
-PyTorch 2.7+ dropped support for Pascal (sm_61) GPUs. The cu118 wheels of 2.6.x
-are the last builds that still include sm_61 binaries. A one-command Windows
-script is provided:
+`pyproject.toml` declares **three mutually-exclusive torch variants** and the
+run scripts auto-pick one based on your GPU's compute capability:
 
-```bat
-run_gpu.bat            REM 完整实验 (100 轮)
-run_gpu.bat --quick    REM 快速验证 GPU 是否可用
+| GPU compute capability | Variant | Example hardware | torch build |
+|------------------------|---------|------------------|-------------|
+| `< 7.5` (Pascal/Maxwell) | `cu118` | GT 1030, GTX 1080 | torch 2.6.* + cu118 (last sm_61 build) |
+| `>= 7.5` (Turing and newer) | `cu126` | RTX 20/30/40/50 series | torch (latest) + cu126 |
+| no GPU | `cpu` | — | torch (latest) CPU |
+
+The scripts (`run_experiments.sh` on Linux/WSL, `run_gpu.bat` on Windows) will:
+1. query `nvidia-smi --query-gpu=compute_cap` to detect your GPU,
+2. install `uv` if missing,
+3. run `uv sync --extra <variant> --group dev` to build the right environment,
+4. warn loudly and fall back to CPU if torch still has no CUDA.
+
+```bash
+# Linux / WSL (auto-detects GPU, e.g. RTX 4090 -> cu126)
+bash run_experiments.sh
+# Windows (auto-detects GPU, e.g. GT 1030 -> cu118)
+run_gpu.bat
 ```
 
-If you upgrade to a newer GPU (sm_75+), relax the constraint to `torch>=2.6`
-and switch the index to cu126/cu128 in `pyproject.toml`.
+Manual override (skip auto-detection):
+
+```bash
+TORCH_VARIANT=cu126 bash run_experiments.sh     # force a specific variant
+set TORCH_VARIANT=cu118 && run_gpu.bat          # Windows
+```
+
+You can also sync the environment directly without the scripts:
+
+```bash
+uv sync --extra cu126 --group dev   # pick cu118 | cu126 | cpu
+```
 
 ### Installation (Conda, legacy)
 

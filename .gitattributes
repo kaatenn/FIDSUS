@@ -1,0 +1,11 @@
+# 强制 shell 脚本在所有平台 checkout 时使用 LF 行尾。
+# 否则 core.autocrlf=true 会在 Windows 上把 .sh 转成 CRLF,
+# 导致在 Linux 上运行报错（bash: \r: command not found）。
+*.sh text eol=lf
+
+# bat 脚本必须用 CRLF（Windows cmd 要求）
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Python 源码统一 LF
+*.py text eol=lf

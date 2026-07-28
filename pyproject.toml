@@ -18,50 +18,78 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 
-# 运行时硬依赖：仅保留 system/ 运行时实际 import 的库
-#   torch / numpy / h5py / scikit-learn
-#
-# torch 版本说明（重要）：
-#   本机 GPU 为 NVIDIA GT 1030（Pascal 架构, compute capability sm_61）。
-#   PyTorch 2.7+ 的默认 CUDA 构建已不再支持 sm_61（最低要求 sm_75）。
-#   最后一个仍含 sm_61 的 cu118 构建是 PyTorch 2.6.x，故此处锁定 2.6.*
-#   并通过下方 [[tool.uv.index]] 指向 cu118 索引。
-#   若改用更新的 GPU（sm_75+），可放宽为 "torch>=2.6" 并切换到 cu126/cu128 索引。
+# 运行时硬依赖：仅保留 system/ 运行时实际 import 的库（不含 torch，torch 走 optional）
+#   numpy / h5py / scikit-learn
 dependencies = [
-    "torch>=2.6,<2.7",
     "numpy>=1.24,<3.0",
     "h5py>=3.8",
     "scikit-learn>=1.2",
 ]
 
+# ---------------------------------------------------------------------------
+# torch 多 CUDA 变体（互斥，二选一）。
+#   - cu118 : Pascal 等老卡（sm_61 / compute_cap < 7.5），如 GT 1030。
+#             PyTorch 2.7+ 的默认 CUDA 构建不再支持 sm_61，2.6.*+cu118 是
+#             最后一个仍含 sm_61 二进制的稳定构建。
+#   - cu126 : Turing 及更新（sm_75+ / compute_cap >= 7.5），如 RTX 40/50 系。
+#             cu126 是 2025 年支持 sm_89（RTX 4090 等）最稳定的官方构建。
+#   - cpu   : 无 GPU 环境（CI、纯 CPU 机器）。
+#
+# 选择方式（由 run_experiments.sh / run_gpu.bat 自动检测 GPU 决定）：
+#   uv sync --extra cu118      # 老卡
+#   uv sync --extra cu126      # 新卡（RTX 20/30/40/50 系）
+#   uv sync --extra cpu        # 无 GPU
+#
+# 手动指定也可，但三选一（conflicts 保证互斥）。
+# ---------------------------------------------------------------------------
+[project.optional-dependencies]
+cu118 = [
+    "torch>=2.6,<2.7",
+]
+cu126 = [
+    "torch>=2.6",
+]
+cpu = [
+    "torch>=2.6",
+]
+
 [dependency-groups]
-# 测试依赖（uv run pytest）
+# 测试依赖（uv sync --group dev 或 uv run pytest）
 dev = [
     "pytest>=8.0",
 ]
-# 数据集生成工具的可选依赖
-#   dataset/utils/dataset_utils.py 使用 ujson；
-#   仅在重新分区数据集时需要，不影响 system/ 运行。
+# 数据集生成工具的可选依赖（dataset/utils/dataset_utils.py 用 ujson）
 dataset = [
     "ujson>=5.0",
 ]
 
 [tool.uv]
-# torch 走 PyTorch 官方 cu118 索引（含 sm_61/Pascal 支持）。
-# 非依赖（无主键）包从这里取，其余依赖仍走 PyPI。
+# 三个 CUDA 变体互斥：同一环境只能装一种 torch。
+conflicts = [
+    [
+        { extra = "cu118" },
+        { extra = "cu126" },
+        { extra = "cpu" },
+    ],
+]
 
-# PyTorch CUDA 11.8 索引：本地 GPU (GT 1030, sm_61) 必需
+# torch 按 extra 路由到不同索引；cu118→cu118 索引，cu126→cu126 索引，
+# cpu→PyPI（默认 CPU wheel）。
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cu118", extra = "cu118" },
+    { index = "pytorch-cu126", extra = "cu126" },
+]
+
 [[tool.uv.index]]
 name = "pytorch-cu118"
 url = "https://download.pytorch.org/whl/cu118"
 explicit = true
 
-[tool.uv.sources]
-torch = { index = "pytorch-cu118" }
-
-# 若需回退到 CPU 版 torch（例如在无 GPU 的机器上），
-# 注释掉上面 [tool.uv.sources] 与 [[tool.uv.index]] 两段，并把 dependencies 里改为
-# "torch>=2.6"（CPU wheel 默认来自 PyPI）。
+[[tool.uv.index]]
+name = "pytorch-cu126"
+url = "https://download.pytorch.org/whl/cu126"
+explicit = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
